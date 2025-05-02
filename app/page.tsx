@@ -130,12 +130,7 @@ export default function Home() {
               </motion.div>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="md:w-1/2 flex justify-center"
-            >
+            <div className="md:w-1/2 flex justify-center">
               <Image
                 src="/diceryn-new.png"
                 alt="DiceRyn Logo"
@@ -144,7 +139,7 @@ export default function Home() {
                 className="rounded-lg shadow-2xl shadow-purple-500/20"
                 priority
               />
-            </motion.div>
+            </div>
           </div>
         </div>
       </AnimatedSection>
