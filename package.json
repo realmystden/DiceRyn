@@ -65,13 +65,13 @@
     "react-native": "latest",
     "three": "latest",
     "@emotion/is-prop-valid": "latest",
+    "@react-three/fiber": "latest",
     "immer": "latest",
     "use-sync-external-store": "latest",
-    "@react-three/fiber": "latest",
     "jspdf": "latest",
     "framer-motion": "latest",
-    "zustand": "latest",
-    "@react-three/drei": "latest"
+    "@react-three/drei": "latest",
+    "zustand": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

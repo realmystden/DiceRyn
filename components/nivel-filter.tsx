@@ -12,7 +12,7 @@ export function NivelFilter() {
   const { nivelFilter, setNivelFilter } = useProjectIdeasStore()
 
   // Niveles disponibles
-  const niveles = ["Trainee", "Junior", "Senior"]
+  const niveles = ["Student", "Trainee", "Junior", "Senior"]
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,7 +47,7 @@ export function NivelFilter() {
                 <CommandItem
                   key={nivel}
                   onSelect={() => {
-                    setNivelFilter(nivel as "Trainee" | "Junior" | "Senior")
+                    setNivelFilter(nivel as "Student" | "Trainee" | "Junior" | "Senior")
                     setOpen(false)
                   }}
                   className="cursor-pointer font-fondamento"

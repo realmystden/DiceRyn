@@ -4,9 +4,9 @@ import { create } from "zustand"
 type SortOption = "default" | "category" | "language" | "framework" | "database" | "nivel"
 
 // Modificar el tipo de aplicación para que solo permita web, móvil o escritorio
-type AppType = "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | null
+type AppType = "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | "Videojuego" | null
 
-type NivelType = "Trainee" | "Junior" | "Senior" | null
+type NivelType = "Student" | "Trainee" | "Junior" | "Senior" | null
 
 type ProjectIdeasStore = {
   // Estado para la idea seleccionada

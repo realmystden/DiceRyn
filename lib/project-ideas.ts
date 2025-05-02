@@ -6,13 +6,14 @@ export interface ProjectIdea {
   tecnologias: string[]
   frameworks: string[]
   basesdedatos: string[]
-  nivel: "Trainee" | "Junior" | "Senior"
+  nivel: "Student" | "Trainee" | "Junior" | "Senior"
   tipo: "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | "Videojuego"
 }
 
 // Importar ideas adicionales
 import { additionalProjectIdeas } from "./project-ideas-additional"
 import { gameProjectIdeas } from "./project-ideas-games"
+import { studentProjectIdeas } from "./project-ideas-student"
 
 // Lista ampliada de ideas con más lenguajes de programación
 const baseProjectIdeas: ProjectIdea[] = [
@@ -786,5 +787,10 @@ const baseProjectIdeas: ProjectIdea[] = [
   },
 ]
 
-// Combinar las ideas base con las ideas adicionales y de videojuegos
-export const projectIdeas: ProjectIdea[] = [...baseProjectIdeas, ...additionalProjectIdeas, ...gameProjectIdeas]
+// Combinar las ideas base con las ideas adicionales, de videojuegos y de estudiantes
+export const projectIdeas: ProjectIdea[] = [
+  ...baseProjectIdeas,
+  ...additionalProjectIdeas,
+  ...gameProjectIdeas,
+  ...studentProjectIdeas,
+]
