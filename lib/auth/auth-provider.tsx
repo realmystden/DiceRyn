@@ -37,10 +37,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error("Error getting session:", error)
+        } else {
+          setSession(session)
+          setUser(session?.user ?? null)
         }
-
-        setSession(session)
-        setUser(session?.user ?? null)
       } catch (error) {
         console.error("Unexpected error getting session:", error)
       } finally {
@@ -53,16 +53,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.id)
+
       setSession(session)
       setUser(session?.user ?? null)
-      setIsLoading(false)
 
       // Refresh the page to update server components
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        router.refresh()
+      } else if (event === "SIGNED_OUT") {
+        setSession(null)
+        setUser(null)
         router.refresh()
       }
+
+      setIsLoading(false)
     })
 
     return () => {

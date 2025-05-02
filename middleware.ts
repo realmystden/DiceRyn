@@ -11,15 +11,14 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Protected routes that require authentication
-  const protectedRoutes = ["/profile/settings", "/achievements/create", "/projects/create"]
+  const protectedRoutes = ["/profile", "/profile/settings", "/achievements/create", "/projects/create"]
 
   // Check if the route is protected and user is not authenticated
-  const isProtectedRoute = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
+  const isProtectedRoute = protectedRoutes.some(
+    (route) => req.nextUrl.pathname === route || req.nextUrl.pathname.startsWith(`${route}/`),
+  )
 
-  // Add specific check for profile routes
-  const isProfileRoute = req.nextUrl.pathname === "/profile" || req.nextUrl.pathname.startsWith("/profile/")
-
-  if ((isProtectedRoute || isProfileRoute) && !session) {
+  if (isProtectedRoute && !session) {
     const redirectUrl = new URL("/auth/login", req.url)
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
