@@ -29,13 +29,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       setIsLoading(true)
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      setSession(session)
-      setUser(session?.user ?? null)
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
 
-      setIsLoading(false)
+        if (error) {
+          console.error("Error getting session:", error)
+        }
+
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error("Unexpected error getting session:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     getInitialSession()
@@ -44,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session?.user?.id)
       setSession(session)
       setUser(session?.user ?? null)
       setIsLoading(false)
@@ -65,14 +76,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (provider === "email") {
         const { email, password } = options
-        await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
       } else {
-        await supabase.auth.signInWithOAuth({
+        const { error } = await supabase.auth.signInWithOAuth({
           provider,
           options: {
             redirectTo: `${window.location.origin}/auth/callback`,
           },
         })
+        if (error) throw error
       }
     } catch (error) {
       console.error("Error signing in:", error)
@@ -85,7 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setIsLoading(true)
-      await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
       router.push("/")
     } catch (error) {
       console.error("Error signing out:", error)

@@ -16,7 +16,10 @@ export async function middleware(req: NextRequest) {
   // Check if the route is protected and user is not authenticated
   const isProtectedRoute = protectedRoutes.some((route) => req.nextUrl.pathname.startsWith(route))
 
-  if (isProtectedRoute && !session) {
+  // Add specific check for profile routes
+  const isProfileRoute = req.nextUrl.pathname === "/profile" || req.nextUrl.pathname.startsWith("/profile/")
+
+  if ((isProtectedRoute || isProfileRoute) && !session) {
     const redirectUrl = new URL("/auth/login", req.url)
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
@@ -26,5 +29,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/profile/settings/:path*", "/achievements/create/:path*", "/projects/create/:path*"],
+  matcher: ["/profile/:path*", "/profile/settings/:path*", "/achievements/create/:path*", "/projects/create/:path*"],
 }
