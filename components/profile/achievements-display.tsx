@@ -18,7 +18,8 @@ export function AchievementsDisplay() {
     async function fetchAchievements() {
       setLoading(true)
       try {
-        const { achievements, error } = await achievementService.getUserAchievements()
+        // Use the new method that includes progress
+        const { achievements, error } = await achievementService.getUserAchievementsWithProgress()
         if (error) throw error
         setAchievements(achievements)
       } catch (err) {
@@ -158,13 +159,35 @@ export function AchievementsDisplay() {
               // Determine card styling based on level and completion status
               let cardStyle = "bg-gray-800/50 border-gray-700"
               let levelBadgeStyle = "bg-gray-700 text-gray-300"
+              let progressColor = "bg-gray-600"
 
               if (achievement.completed) {
-                if (achievement.level === "Student") cardStyle = "bg-green-900/30 border-green-700"
-                if (achievement.level === "Trainee") cardStyle = "bg-blue-900/30 border-blue-700"
-                if (achievement.level === "Junior") cardStyle = "bg-indigo-900/30 border-indigo-700"
-                if (achievement.level === "Senior") cardStyle = "bg-purple-900/30 border-purple-700"
-                if (achievement.level === "Master") cardStyle = "bg-amber-900/30 border-amber-700"
+                if (achievement.level === "Student") {
+                  cardStyle = "bg-green-900/30 border-green-700"
+                  progressColor = "bg-green-600"
+                }
+                if (achievement.level === "Trainee") {
+                  cardStyle = "bg-blue-900/30 border-blue-700"
+                  progressColor = "bg-blue-600"
+                }
+                if (achievement.level === "Junior") {
+                  cardStyle = "bg-indigo-900/30 border-indigo-700"
+                  progressColor = "bg-indigo-600"
+                }
+                if (achievement.level === "Senior") {
+                  cardStyle = "bg-purple-900/30 border-purple-700"
+                  progressColor = "bg-purple-600"
+                }
+                if (achievement.level === "Master") {
+                  cardStyle = "bg-amber-900/30 border-amber-700"
+                  progressColor = "bg-amber-600"
+                }
+              } else {
+                if (achievement.level === "Student") progressColor = "bg-green-600"
+                if (achievement.level === "Trainee") progressColor = "bg-blue-600"
+                if (achievement.level === "Junior") progressColor = "bg-indigo-600"
+                if (achievement.level === "Senior") progressColor = "bg-purple-600"
+                if (achievement.level === "Master") progressColor = "bg-amber-600"
               }
 
               if (achievement.level === "Student") levelBadgeStyle = "bg-green-800 text-green-200"
@@ -176,7 +199,7 @@ export function AchievementsDisplay() {
               return (
                 <Card
                   key={achievement.id}
-                  className={`fantasy-card ${cardStyle} ${!achievement.completed && "opacity-80"}`}
+                  className={`fantasy-card ${cardStyle} ${!achievement.completed && "opacity-80 hover:opacity-100 transition-opacity"}`}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
@@ -186,6 +209,22 @@ export function AchievementsDisplay() {
                       <div className="flex-1">
                         <h3 className="font-cinzel font-bold text-white">{achievement.title}</h3>
                         <p className="text-sm text-gray-300 font-fondamento">{achievement.description}</p>
+
+                        {/* Progress indicator */}
+                        {!achievement.completed && (
+                          <div className="mt-3 mb-2">
+                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                              <span>Progreso</span>
+                              <span>{achievement.progress}%</span>
+                            </div>
+                            <Progress
+                              value={achievement.progress}
+                              className="h-1.5"
+                              indicatorClassName={progressColor}
+                              aria-label={`Progreso hacia el logro ${achievement.title}: ${achievement.progress}%`}
+                            />
+                          </div>
+                        )}
 
                         <div className="mt-3 flex justify-between items-center">
                           <Badge className={levelBadgeStyle}>{achievement.level}</Badge>

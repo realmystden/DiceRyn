@@ -4,6 +4,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useProjectIdeasStore, type AchievementLevel } from "@/lib/store"
 import { Progress } from "@/components/ui/progress"
+import { AchievementProgressDetail } from "@/components/achievement-progress-detail"
 
 export function AchievementsList() {
   const [filter, setFilter] = useState<AchievementLevel | "all">("all")
@@ -49,6 +50,14 @@ export function AchievementsList() {
     Junior: "bg-indigo-900/30 border-indigo-500",
     Senior: "bg-purple-900/30 border-purple-500",
     Master: "bg-amber-900/30 border-amber-500",
+  }
+
+  const progressColors: Record<AchievementLevel, string> = {
+    Student: "bg-green-500",
+    Trainee: "bg-blue-500",
+    Junior: "bg-indigo-500",
+    Senior: "bg-purple-500",
+    Master: "bg-amber-500",
   }
 
   // Calculate progress for an achievement
@@ -125,6 +134,78 @@ export function AchievementsList() {
     return Math.min(Math.floor((current / required) * 100), 99) // Cap at 99% if not completed
   }
 
+  // Get the current value and required value for an achievement
+  const getProgressValues = (achievement: (typeof achievements)[0]): { current: number; required: number } => {
+    let current = 0
+    let required = 1 // Default to avoid division by zero
+
+    if (achievement.requiredProjects) {
+      current = getTotalCompletedProjects()
+      required = achievement.requiredProjects
+    } else if (achievement.requiredLanguages && achievement.requiredLanguages.length > 0) {
+      current = Math.max(...achievement.requiredLanguages.map((lang) => getCompletedProjectsByLanguage(lang)))
+      required =
+        achievement.id.includes("master") ||
+        achievement.id.includes("ninja") ||
+        achievement.id.includes("wizard") ||
+        achievement.id.includes("guru")
+          ? 10
+          : 5
+    } else if (achievement.requiredFrameworks && achievement.requiredFrameworks.length > 0) {
+      current = Math.max(
+        ...achievement.requiredFrameworks.map((framework) => getCompletedProjectsByFramework(framework)),
+      )
+      required =
+        achievement.id.includes("architect") || achievement.id.includes("master") || achievement.id.includes("expert")
+          ? 10
+          : 5
+    } else if (achievement.requiredDatabases && achievement.requiredDatabases.length > 0) {
+      current = Math.max(...achievement.requiredDatabases.map((db) => getCompletedProjectsByDatabase(db)))
+      required = achievement.id.includes("architect") || achievement.id.includes("master") ? 10 : 5
+    } else if (achievement.requiredAppTypes && achievement.requiredAppTypes.length > 0) {
+      current = Math.max(...achievement.requiredAppTypes.map((type) => getCompletedProjectsByAppType(type)))
+      required = achievement.id.includes("architect") || achievement.id.includes("researcher") ? 10 : 5
+    } else if (achievement.requiredLevelProjects) {
+      current = getCompletedProjectsByLevel(achievement.requiredLevelProjects.level)
+      required = achievement.requiredLevelProjects.count
+    } else if (achievement.requiredConsistency) {
+      const { type, count } = achievement.requiredConsistency
+
+      switch (type) {
+        case "streak":
+          current = getConsecutiveDaysStreak()
+          required = count
+          break
+        case "weekly":
+          current = getWeeklyCompletionCount(achievement.requiredConsistency.period || 1)
+          required = count
+          break
+        case "monthly":
+          current = getMonthlyCompletionCount(achievement.requiredConsistency.period || 1)
+          required = count
+          break
+        case "sameDay":
+          current = getProjectsCompletedSameDay()
+          required = count
+          break
+        case "timeOfDay":
+          if (achievement.requiredConsistency.timeRange) {
+            current = getProjectsByTimeOfDay(achievement.requiredConsistency.timeRange)
+            required = count
+          }
+          break
+        case "dayOfWeek":
+          if (achievement.requiredConsistency.dayType) {
+            current = getProjectsByDayType(achievement.requiredConsistency.dayType)
+            required = count
+          }
+          break
+      }
+    }
+
+    return { current, required }
+  }
+
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -181,6 +262,7 @@ export function AchievementsList() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {sortedAchievements.map((achievement) => {
           const progress = calculateProgress(achievement)
+          const { current, required } = getProgressValues(achievement)
 
           return (
             <motion.div
@@ -196,8 +278,11 @@ export function AchievementsList() {
                 <span className={`text-2xl mr-2 ${achievement.completed ? "" : "grayscale opacity-70"}`}>
                   {achievement.icon}
                 </span>
-                <div>
-                  <h3 className="font-cinzel font-bold text-white">{achievement.title}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-cinzel font-bold text-white">{achievement.title}</h3>
+                    {!achievement.completed && <AchievementProgressDetail achievement={achievement} />}
+                  </div>
                   <p className="text-sm text-gray-300 font-fondamento">{achievement.description}</p>
                 </div>
               </div>
@@ -206,18 +291,15 @@ export function AchievementsList() {
                 <div className="mt-2 mb-3">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
                     <span>Progreso</span>
-                    <span>{progress}%</span>
+                    <span>
+                      {current} / {required} ({progress}%)
+                    </span>
                   </div>
                   <Progress
                     value={progress}
                     className="h-2"
-                    indicatorClassName={`
-                      ${achievement.level === "Student" ? "bg-green-500" : ""}
-                      ${achievement.level === "Trainee" ? "bg-blue-500" : ""}
-                      ${achievement.level === "Junior" ? "bg-indigo-500" : ""}
-                      ${achievement.level === "Senior" ? "bg-purple-500" : ""}
-                      ${achievement.level === "Master" ? "bg-amber-500" : ""}
-                    `}
+                    indicatorClassName={progressColors[achievement.level]}
+                    aria-label={`Progreso hacia el logro ${achievement.title}: ${progress}%`}
                   />
                 </div>
               )}

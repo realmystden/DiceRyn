@@ -14,6 +14,7 @@ export interface Achievement {
   created_at: string
   completed?: boolean
   completedAt?: string | null
+  progress?: number // Add progress field
 }
 
 export interface AchievementCriteria {
@@ -591,6 +592,259 @@ export const achievementService = {
         achievementsByLevel: {},
         error,
       }
+    }
+  },
+
+  // Calculate progress for a specific achievement
+  calculateAchievementProgress(achievement: Achievement, projects: CompletedProject[]): number {
+    if (achievement.completed) return 100
+
+    const criteria = achievement.criteria
+    let current = 0
+    let required = 1 // Default to avoid division by zero
+
+    switch (criteria.type) {
+      case "project_count":
+        current = projects.length
+        required = criteria.count || 1
+        break
+
+      case "language":
+        if (criteria.languages && criteria.count) {
+          const languageCounts = criteria.languages.map(
+            (lang) => projects.filter((p) => p.technologies.includes(lang)).length,
+          )
+          current = Math.max(...languageCounts)
+          required = criteria.count
+        }
+        break
+
+      case "framework":
+        if (criteria.frameworks && criteria.count) {
+          const frameworkCounts = criteria.frameworks.map(
+            (framework) => projects.filter((p) => p.frameworks.includes(framework)).length,
+          )
+          current = Math.max(...frameworkCounts)
+          required = criteria.count
+        }
+        break
+
+      case "database":
+        if (criteria.databases && criteria.count) {
+          const databaseCounts = criteria.databases.map((db) => projects.filter((p) => p.databases.includes(db)).length)
+          current = Math.max(...databaseCounts)
+          required = criteria.count
+        }
+        break
+
+      case "level":
+        if (criteria.levels && criteria.count) {
+          const levelCounts = criteria.levels.map((level) => projects.filter((p) => p.level === level).length)
+          current = Math.max(...levelCounts)
+          required = criteria.count
+        }
+        break
+
+      case "app_type":
+        if (criteria.app_types && criteria.count) {
+          const appTypeCounts = criteria.app_types.map((type) => projects.filter((p) => p.app_type === type).length)
+          current = Math.max(...appTypeCounts)
+          required = criteria.count
+        }
+        break
+
+      case "streak":
+        if (criteria.streak_days) {
+          // Calculate current streak
+          const currentStreak = this.calculateCurrentStreak(projects)
+          current = currentStreak
+          required = criteria.streak_days
+        }
+        break
+
+      case "combination":
+        if (criteria.languages && criteria.frameworks && criteria.count) {
+          // Count projects that use both the specified language and framework
+          const combinationCount = projects.filter(
+            (p) =>
+              criteria.languages!.some((lang) => p.technologies.includes(lang)) &&
+              criteria.frameworks!.some((framework) => p.frameworks.includes(framework)),
+          ).length
+          current = combinationCount
+          required = criteria.count
+        }
+        break
+
+      case "time_of_day":
+        if (criteria.time_range && criteria.count) {
+          // Count projects completed during the specified time range
+          const timeRangeProjects = this.getProjectsByTimeOfDay(projects, criteria.time_range)
+          current = timeRangeProjects
+          required = criteria.count
+        }
+        break
+
+      case "special":
+        // Special conditions would be handled case by case
+        if (criteria.special_condition === "easter_egg") {
+          current = localStorage.getItem("easterEggActivated") === "true" ? 1 : 0
+          required = 1
+        }
+        break
+    }
+
+    // Calculate percentage, cap at 99% if not completed
+    return achievement.completed ? 100 : Math.min(Math.floor((current / required) * 100), 99)
+  },
+
+  // Calculate current streak of consecutive days
+  calculateCurrentStreak(projects: CompletedProject[]): number {
+    if (projects.length === 0) return 0
+
+    // Sort projects by completion date
+    const sortedProjects = [...projects].sort(
+      (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime(),
+    )
+
+    // Get unique dates (in YYYY-MM-DD format)
+    const uniqueDates = new Set<string>()
+    sortedProjects.forEach((project) => {
+      const date = new Date(project.completed_at)
+      const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+      uniqueDates.add(dateString)
+    })
+
+    const uniqueDatesArray = Array.from(uniqueDates).sort()
+
+    // Check for consecutive days
+    let currentStreak = 1
+
+    // Check if the most recent date is today or yesterday
+    const today = new Date()
+    const todayString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+
+    const yesterday = new Date(today)
+    yesterday.setDate(today.getDate() - 1)
+    const yesterdayString = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`
+
+    const mostRecentDate = uniqueDatesArray[uniqueDatesArray.length - 1]
+
+    // If the most recent date is not today or yesterday, streak is broken
+    if (mostRecentDate !== todayString && mostRecentDate !== yesterdayString) {
+      return 0
+    }
+
+    // Count consecutive days
+    for (let i = uniqueDatesArray.length - 2; i >= 0; i--) {
+      const currDate = new Date(uniqueDatesArray[i + 1])
+      const prevDate = new Date(uniqueDatesArray[i])
+
+      // Check if dates are consecutive
+      const diffTime = Math.abs(currDate.getTime() - prevDate.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+      if (diffDays === 1) {
+        currentStreak++
+      } else {
+        break
+      }
+    }
+
+    return currentStreak
+  },
+
+  // Get count of projects completed during a specific time of day
+  getProjectsByTimeOfDay(projects: CompletedProject[], timeRange: string): number {
+    // Define time ranges
+    const timeRanges = {
+      morning: { start: 5, end: 11 }, // 5 AM - 11:59 AM
+      afternoon: { start: 12, end: 17 }, // 12 PM - 5:59 PM
+      evening: { start: 18, end: 21 }, // 6 PM - 9:59 PM
+      night: { start: 22, end: 4 }, // 10 PM - 4:59 AM
+    }
+
+    const range = timeRanges[timeRange as keyof typeof timeRanges]
+
+    // Count projects completed during the specified time range
+    const projectsInTimeRange = projects.filter((project) => {
+      const date = new Date(project.completed_at)
+      const hour = date.getHours()
+
+      if (timeRange === "night") {
+        // Night spans across midnight
+        return hour >= range.start || hour <= range.end
+      } else {
+        return hour >= range.start && hour <= range.end
+      }
+    })
+
+    return projectsInTimeRange.length
+  },
+
+  // Get all achievements with completion status and progress for current user
+  async getUserAchievementsWithProgress(): Promise<{ achievements: Achievement[]; error: any }> {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      // Get all achievements
+      const { data: allAchievements, error: achievementsError } = await supabase
+        .from("achievements")
+        .select("*, badges(*)")
+
+      if (achievementsError) throw achievementsError
+
+      // If no session, return all achievements but mark them as not completed
+      if (!session) {
+        const achievements = allAchievements.map((achievement) => ({
+          ...achievement,
+          badge: achievement.badges,
+          completed: false,
+          completedAt: null,
+          progress: 0,
+        }))
+
+        return { achievements, error: null }
+      }
+
+      // Get user's completed projects
+      const { projects, error: projectsError } = await this.getUserCompletedProjects()
+      if (projectsError) throw projectsError
+
+      // Get user's completed achievements
+      const { data: userAchievements, error: userAchievementsError } = await supabase
+        .from("user_achievements")
+        .select("achievement_id, completed_at")
+        .eq("user_id", session.user.id)
+
+      if (userAchievementsError) throw userAchievementsError
+
+      // Mark achievements as completed and calculate progress
+      const achievements = allAchievements.map((achievement) => {
+        const userAchievement = userAchievements?.find((ua) => ua.achievement_id === achievement.id)
+        const isCompleted = !!userAchievement
+
+        const achievementWithCompletion = {
+          ...achievement,
+          badge: achievement.badges,
+          completed: isCompleted,
+          completedAt: userAchievement?.completed_at || null,
+        }
+
+        // Calculate progress
+        const progress = this.calculateAchievementProgress(achievementWithCompletion, projects)
+
+        return {
+          ...achievementWithCompletion,
+          progress,
+        }
+      })
+
+      return { achievements, error: null }
+    } catch (error) {
+      console.error("Error fetching achievements with progress:", error)
+      return { achievements: [], error }
     }
   },
 }

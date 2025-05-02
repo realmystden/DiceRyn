@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useSound } from "@/hooks/use-sound"
+import { Progress } from "@/components/ui/progress"
 import type { Achievement } from "@/lib/services/achievement-service"
 
 interface AchievementNotificationProps {
@@ -28,22 +29,28 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
   // Determine background color based on achievement level
   let bgColor = "from-purple-900/90 to-indigo-900/90"
   let borderColor = "border-purple-500/50"
+  let progressColor = "bg-purple-500"
 
   if (achievement.level === "Student") {
     bgColor = "from-green-900/90 to-green-800/90"
     borderColor = "border-green-500/50"
+    progressColor = "bg-green-500"
   } else if (achievement.level === "Trainee") {
     bgColor = "from-blue-900/90 to-blue-800/90"
     borderColor = "border-blue-500/50"
+    progressColor = "bg-blue-500"
   } else if (achievement.level === "Junior") {
     bgColor = "from-indigo-900/90 to-indigo-800/90"
     borderColor = "border-indigo-500/50"
+    progressColor = "bg-indigo-500"
   } else if (achievement.level === "Senior") {
     bgColor = "from-purple-900/90 to-purple-800/90"
     borderColor = "border-purple-500/50"
+    progressColor = "bg-purple-500"
   } else if (achievement.level === "Master") {
     bgColor = "from-amber-900/90 to-amber-800/90"
     borderColor = "border-amber-500/50"
+    progressColor = "bg-amber-500"
   }
 
   return (
@@ -61,6 +68,16 @@ export function AchievementNotification({ achievement, onClose }: AchievementNot
             <h3 className="font-cinzel text-lg font-bold text-white">¡Logro Desbloqueado!</h3>
             <p className="font-cinzel text-xl text-purple-300">{achievement.title}</p>
             <p className="text-sm text-gray-300 font-fondamento mt-1">{achievement.description}</p>
+
+            {/* Progress bar showing 100% */}
+            <div className="mt-2">
+              <div className="flex justify-between text-xs text-gray-300 mb-1">
+                <span>Progreso</span>
+                <span>¡Completado!</span>
+              </div>
+              <Progress value={100} className="h-1.5" indicatorClassName={progressColor} />
+            </div>
+
             {achievement.badge_id && (
               <p className="text-xs text-yellow-300 mt-1">
                 <span className="mr-1">🏅</span>
