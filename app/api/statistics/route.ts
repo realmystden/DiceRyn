@@ -1,219 +1,195 @@
 import { NextResponse } from "next/server"
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
+import { getSupabaseServer } from "@/lib/supabase/server"
 
 export async function GET() {
-  console.log("Statistics API route called")
+  const supabase = getSupabaseServer()
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
 
   try {
-    // Use createRouteHandlerClient which is specifically designed for API routes
-    const supabase = createRouteHandlerClient({ cookies })
+    // Fetch completed projects
+    const { data: completedProjects, error: projectsError } = await supabase
+      .from("completed_projects")
+      .select("*")
+      .eq("user_id", user.id)
 
-    console.log("Supabase client created")
+    if (projectsError) throw projectsError
 
-    // Get the current user
-    const { data: userData, error: userError } = await supabase.auth.getUser()
+    // Fetch achievements
+    const { data: userAchievements, error: achievementsError } = await supabase
+      .from("user_achievements")
+      .select(`
+        id,
+        completed_at,
+        achievements (*)
+      `)
+      .eq("user_id", user.id)
 
-    if (userError) {
-      console.error("Auth error:", userError)
-      return NextResponse.json({ error: "Authentication error" }, { status: 401 })
+    if (achievementsError) throw achievementsError
+
+    // Fetch all achievements for total count
+    const { data: allAchievements, error: allAchievementsError } = await supabase.from("achievements").select("*")
+
+    if (allAchievementsError) throw allAchievementsError
+
+    // Process the data
+    const achievements = userAchievements.map((item) => ({
+      ...item.achievements,
+      completed: true,
+      completedAt: item.completed_at,
+    }))
+
+    // Calculate statistics
+    const studentProjects = completedProjects.filter((p) => p.level === "Student").length
+    const traineeProjects = completedProjects.filter((p) => p.level === "Trainee").length
+    const juniorProjects = completedProjects.filter((p) => p.level === "Junior").length
+    const seniorProjects = completedProjects.filter((p) => p.level === "Senior").length
+
+    // Calculate language statistics
+    const languages = new Set<string>()
+    completedProjects.forEach((project) => {
+      project.technologies.forEach((tech) => languages.add(tech))
+    })
+
+    const languageStats = Array.from(languages)
+      .map((lang) => ({
+        name: lang,
+        count: completedProjects.filter((p) => p.technologies.includes(lang)).length,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+
+    // Calculate framework statistics
+    const frameworks = new Set<string>()
+    completedProjects.forEach((project) => {
+      project.frameworks.forEach((framework) => frameworks.add(framework))
+    })
+
+    const frameworkStats = Array.from(frameworks)
+      .map((framework) => ({
+        name: framework,
+        count: completedProjects.filter((p) => p.frameworks.includes(framework)).length,
+      }))
+      .filter((item) => item.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+
+    // Calculate database statistics
+    const databases = new Set<string>()
+    completedProjects.forEach((project) => {
+      project.databases.forEach((db) => databases.add(db))
+    })
+
+    const databaseStats = Array.from(databases)
+      .map((db) => ({
+        name: db,
+        count: completedProjects.filter((p) => p.databases.includes(db)).length,
+      }))
+      .filter((item) => item.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+
+    // Calculate monthly data
+    const projectsByMonth: Record<string, { name: string; count: number }> = {}
+
+    // Initialize all months in the last year
+    const today = new Date()
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1)
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
+      const monthName = date.toLocaleString("default", { month: "long", year: "numeric" })
+
+      projectsByMonth[monthKey] = {
+        name: monthName,
+        count: 0,
+      }
     }
 
-    if (!userData?.user) {
-      console.log("No user found")
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    // Count projects by month
+    completedProjects.forEach((project) => {
+      const date = new Date(project.completed_at)
+      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
 
-    const user = userData.user
-    console.log("User authenticated:", user.id)
-
-    try {
-      // Check if the completed_projects table exists
-      const { count, error: tableCheckError } = await supabase
-        .from("completed_projects")
-        .select("*", { count: "exact", head: true })
-
-      if (tableCheckError) {
-        console.error("Table check error:", tableCheckError)
-        return NextResponse.json(
-          {
-            error: "Database table error",
-            details: tableCheckError.message,
-          },
-          { status: 500 },
-        )
+      if (projectsByMonth[monthKey]) {
+        projectsByMonth[monthKey].count++
       }
+    })
 
-      console.log("Table check successful, count:", count)
+    const monthlyData = Object.values(projectsByMonth)
+      .sort((a, b) => {
+        // Extract year and month from the name for proper sorting
+        const aMatch = a.name.match(/(\w+) (\d{4})/)
+        const bMatch = b.name.match(/(\w+) (\d{4})/)
 
-      // Fetch completed projects
-      const { data: completedProjects, error: projectsError } = await supabase
-        .from("completed_projects")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("completed_at", { ascending: false })
+        if (!aMatch || !bMatch) return 0
 
-      if (projectsError) {
-        console.error("Projects fetch error:", projectsError)
-        return NextResponse.json(
-          {
-            error: "Failed to fetch projects",
-            details: projectsError.message,
-          },
-          { status: 500 },
-        )
-      }
+        const aYear = Number.parseInt(aMatch[2])
+        const bYear = Number.parseInt(bMatch[2])
 
-      console.log("Projects fetched successfully:", completedProjects?.length || 0)
+        if (aYear !== bYear) return aYear - bYear
 
-      // Get user achievements
-      const { data: userAchievements, error: achievementsError } = await supabase
-        .from("user_achievements")
-        .select("achievement_id")
-        .eq("user_id", user.id)
+        // Convert month names to numbers for sorting
+        const months = [
+          "enero",
+          "febrero",
+          "marzo",
+          "abril",
+          "mayo",
+          "junio",
+          "julio",
+          "agosto",
+          "septiembre",
+          "octubre",
+          "noviembre",
+          "diciembre",
+        ]
+        const aMonth = months.indexOf(aMatch[1].toLowerCase())
+        const bMonth = months.indexOf(bMatch[1].toLowerCase())
 
-      if (achievementsError) {
-        console.error("Achievements fetch error:", achievementsError)
-      }
-
-      // Get total number of achievements
-      const { count: totalAchievements, error: totalAchievementsError } = await supabase
-        .from("achievements")
-        .select("*", { count: "exact", head: true })
-
-      if (totalAchievementsError) {
-        console.error("Total achievements fetch error:", totalAchievementsError)
-      }
-
-      // Calculate statistics
-      const projectsByLevel = {
-        Student: completedProjects?.filter((p) => p.level === "Student").length || 0,
-        Trainee: completedProjects?.filter((p) => p.level === "Trainee").length || 0,
-        Junior: completedProjects?.filter((p) => p.level === "Junior").length || 0,
-        Senior: completedProjects?.filter((p) => p.level === "Senior").length || 0,
-      }
-
-      // Calculate language stats
-      const languageCounts: Record<string, number> = {}
-      completedProjects?.forEach((project) => {
-        project.technologies?.forEach((tech) => {
-          languageCounts[tech] = (languageCounts[tech] || 0) + 1
-        })
+        return aMonth - bMonth
       })
+      .slice(-6) // Last 6 months
 
-      const languageStats = Object.entries(languageCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
+    // Calculate projects by day of week
+    const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+    const projectsByDay = Array(7)
+      .fill(0)
+      .map((_, i) => ({
+        name: dayNames[i],
+        count: 0,
+      }))
 
-      // Calculate framework stats
-      const frameworkCounts: Record<string, number> = {}
-      completedProjects?.forEach((project) => {
-        project.frameworks?.forEach((framework) => {
-          frameworkCounts[framework] = (frameworkCounts[framework] || 0) + 1
-        })
-      })
+    completedProjects.forEach((project) => {
+      const date = new Date(project.completed_at)
+      const dayOfWeek = date.getDay() // 0-6
+      projectsByDay[dayOfWeek].count++
+    })
 
-      const frameworkStats = Object.entries(frameworkCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
-
-      // Calculate database stats
-      const databaseCounts: Record<string, number> = {}
-      completedProjects?.forEach((project) => {
-        project.databases?.forEach((db) => {
-          databaseCounts[db] = (databaseCounts[db] || 0) + 1
-        })
-      })
-
-      const databaseStats = Object.entries(databaseCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
-
-      // Calculate monthly data (last 6 months)
-      const monthNames = [
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre",
-      ]
-      const now = new Date()
-      const monthlyData = Array(6)
-        .fill(0)
-        .map((_, i) => {
-          const monthIndex = (now.getMonth() - i + 12) % 12
-          const year = now.getFullYear() - (now.getMonth() < monthIndex ? 1 : 0)
-          const month = monthNames[monthIndex]
-
-          // Count projects in this month
-          const count =
-            completedProjects?.filter((p) => {
-              const date = new Date(p.completed_at)
-              return date.getMonth() === monthIndex && date.getFullYear() === year
-            }).length || 0
-
-          return { name: `${month} ${year}`, count }
-        })
-        .reverse()
-
-      // Calculate projects by day of week
-      const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
-      const projectsByDay = dayNames.map((name) => {
-        const dayIndex = dayNames.indexOf(name)
-        const count =
-          completedProjects?.filter((p) => {
-            const date = new Date(p.completed_at)
-            return date.getDay() === dayIndex
-          }).length || 0
-
-        return { name, count }
-      })
-
-      // Return comprehensive statistics
-      return NextResponse.json({
-        success: true,
-        totalProjects: completedProjects?.length || 0,
-        studentProjects: projectsByLevel.Student,
-        traineeProjects: projectsByLevel.Trainee,
-        juniorProjects: projectsByLevel.Junior,
-        seniorProjects: projectsByLevel.Senior,
-        languageStats,
-        frameworkStats,
-        databaseStats,
-        monthlyData,
-        projectsByDay,
-        completedProjects: completedProjects || [],
-        unlockedAchievements: userAchievements?.length || 0,
-        totalAchievements: totalAchievements || 0,
-      })
-    } catch (dbError) {
-      console.error("Database operation error:", dbError)
-      return NextResponse.json(
-        {
-          error: "Database operation failed",
-          details: dbError instanceof Error ? dbError.message : "Unknown database error",
-        },
-        { status: 500 },
-      )
-    }
+    return NextResponse.json({
+      completedProjects,
+      achievements,
+      totalProjects: completedProjects.length,
+      unlockedAchievements: achievements.length,
+      totalAchievements: allAchievements.length,
+      studentProjects,
+      traineeProjects,
+      juniorProjects,
+      seniorProjects,
+      languageStats,
+      frameworkStats,
+      databaseStats,
+      monthlyData,
+      projectsByDay,
+    })
   } catch (error) {
-    console.error("Unhandled error in statistics API route:", error)
-    return NextResponse.json(
-      {
-        error: "Server error",
-        details: error instanceof Error ? error.message : "Unknown server error",
-      },
-      { status: 500 },
-    )
+    console.error("Error fetching statistics:", error)
+    return NextResponse.json({ error: "Failed to fetch statistics" }, { status: 500 })
   }
 }
