@@ -101,43 +101,50 @@ function D20Model({ onClick, isRolling, setIsRolling }) {
     if (progress >= 1) {
       setIsRolling(false)
 
-      // Obtener ideas filtradas
-      const { appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter } =
-        useProjectIdeasStore.getState()
+      try {
+        // Obtener ideas filtradas
+        const { appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter } =
+          useProjectIdeasStore.getState()
 
-      let filteredIdeas = [...projectIdeas]
+        let filteredIdeas = [...projectIdeas]
 
-      // Aplicar filtros
-      if (appTypeFilter) {
-        filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
+        // Aplicar filtros
+        if (appTypeFilter) {
+          filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
+        }
+
+        if (languageFilter) {
+          filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
+        }
+
+        if (frameworkFilter) {
+          filteredIdeas = filteredIdeas.filter((idea) => idea.frameworks.includes(frameworkFilter))
+        }
+
+        if (databaseFilter) {
+          filteredIdeas = filteredIdeas.filter((idea) => idea.basesdedatos.includes(databaseFilter))
+        }
+
+        if (nivelFilter) {
+          filteredIdeas = filteredIdeas.filter((idea) => idea.nivel === nivelFilter)
+        }
+
+        // Si no hay ideas con los filtros aplicados, usar todas las ideas
+        if (filteredIdeas.length === 0) {
+          filteredIdeas = projectIdeas
+        }
+
+        // Seleccionar idea aleatoria de las filtradas
+        const randomIndex = Math.floor(Math.random() * filteredIdeas.length)
+        const selectedIdeaIndex = projectIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
+
+        setSelectedIdea(selectedIdeaIndex + 1)
+      } catch (error) {
+        console.error("Error al seleccionar idea:", error)
+        // Seleccionar una idea aleatoria como fallback
+        const randomIndex = Math.floor(Math.random() * projectIdeas.length)
+        setSelectedIdea(randomIndex + 1)
       }
-
-      if (languageFilter) {
-        filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
-      }
-
-      if (frameworkFilter) {
-        filteredIdeas = filteredIdeas.filter((idea) => idea.frameworks.includes(frameworkFilter))
-      }
-
-      if (databaseFilter) {
-        filteredIdeas = filteredIdeas.filter((idea) => idea.basesdedatos.includes(databaseFilter))
-      }
-
-      if (nivelFilter) {
-        filteredIdeas = filteredIdeas.filter((idea) => idea.nivel === nivelFilter)
-      }
-
-      // Si no hay ideas con los filtros aplicados, usar todas las ideas
-      if (filteredIdeas.length === 0) {
-        filteredIdeas = projectIdeas
-      }
-
-      // Seleccionar idea aleatoria de las filtradas
-      const randomIndex = Math.floor(Math.random() * filteredIdeas.length)
-      const selectedIdeaIndex = projectIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
-
-      setSelectedIdea(selectedIdeaIndex + 1)
     }
   })
 
@@ -200,11 +207,24 @@ function D20Model({ onClick, isRolling, setIsRolling }) {
 
 export default function DiceScene() {
   const [isRolling, setIsRolling] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleDiceClick = () => {
     if (!isRolling) {
       setIsRolling(true)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-[500px] flex items-center justify-center">
+        <div className="text-xl font-fondamento">Cargando dado...</div>
+      </div>
+    )
   }
 
   return (

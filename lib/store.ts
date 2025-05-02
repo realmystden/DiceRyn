@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { persist, createJSONStorage } from "zustand/middleware"
 
 // Definir tipos
 type SortOption = "default" | "category" | "language" | "framework" | "database" | "nivel"
@@ -72,6 +72,9 @@ const themeColors = [
   "linear-gradient(to bottom right, #561616, #1E1E4F)", // Rojo brillante a azul medio
 ]
 
+// Función para verificar si estamos en el navegador
+const isBrowser = typeof window !== "undefined"
+
 // Crear store con persistencia
 export const useProjectIdeasStore = create<ProjectIdeasStore>()(
   persist(
@@ -117,20 +120,40 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
       savedIdeas: [],
       saveIdea: (id) =>
         set((state) => ({
-          savedIdeas: [...state.savedIdeas, { id, completed: false, savedAt: new Date().toISOString() }],
+          savedIdeas: [...(state.savedIdeas || []), { id, completed: false, savedAt: new Date().toISOString() }],
         })),
       removeSavedIdea: (id) =>
         set((state) => ({
-          savedIdeas: state.savedIdeas.filter((idea) => idea.id !== id),
+          savedIdeas: (state.savedIdeas || []).filter((idea) => idea.id !== id),
         })),
       toggleCompleted: (id) =>
         set((state) => ({
-          savedIdeas: state.savedIdeas.map((idea) => (idea.id === id ? { ...idea, completed: !idea.completed } : idea)),
+          savedIdeas: (state.savedIdeas || []).map((idea) =>
+            idea.id === id ? { ...idea, completed: !idea.completed } : idea,
+          ),
         })),
     }),
     {
       name: "project-ideas-storage",
+      storage: createJSONStorage(() =>
+        isBrowser ? localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+      ),
       skipHydration: true,
     },
   ),
 )
+
+// Inicializar el store en el cliente
+if (isBrowser) {
+  // Intentar cargar el estado desde localStorage
+  try {
+    const storedState = localStorage.getItem("project-ideas-storage")
+    if (storedState) {
+      const parsedState = JSON.parse(storedState)
+      // Hidratar el store con los datos almacenados
+      useProjectIdeasStore.setState(parsedState.state)
+    }
+  } catch (error) {
+    console.error("Error al hidratar el store:", error)
+  }
+}

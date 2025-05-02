@@ -79,8 +79,15 @@ export function SavedIdeas() {
   }
 
   if (!mounted) {
-    return null // No renderizar nada hasta que el componente esté montado
+    return (
+      <Button variant="outline" className="relative fantasy-button" disabled>
+        <Bookmark className="mr-2 h-4 w-4" />
+        <span className="font-fondamento">Cargando...</span>
+      </Button>
+    )
   }
+
+  const ideasCount = savedIdeas?.length || 0
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -88,7 +95,7 @@ export function SavedIdeas() {
         <Button variant="outline" className="relative fantasy-button">
           <Bookmark className="mr-2 h-4 w-4" />
           <span className="font-fondamento">Ideas Guardadas</span>
-          {savedIdeas?.length || (0 > 0 && <Badge className="ml-2 bg-primary">{savedIdeas?.length || 0}</Badge>)}
+          {ideasCount > 0 && <Badge className="ml-2 bg-primary">{ideasCount}</Badge>}
         </Button>
       </SheetTrigger>
       <SheetContent className="overflow-y-auto fantasy-card border-gold-light/30">

@@ -20,60 +20,73 @@ export function ProjectIdeas() {
 
   const [isVisible, setIsVisible] = useState(false)
   const [filteredIdeas, setFilteredIdeas] = useState(projectIdeas)
+  const [mounted, setMounted] = useState(false)
+
+  // Marcar cuando el componente está montado
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Filtrar y ordenar ideas según los criterios seleccionados
   useEffect(() => {
-    let result = [...projectIdeas]
+    if (!mounted) return
 
-    // Filtrar por tipo de aplicación
-    if (appTypeFilter) {
-      result = result.filter((idea) => idea.tipo === appTypeFilter)
+    try {
+      let result = [...projectIdeas]
+
+      // Filtrar por tipo de aplicación
+      if (appTypeFilter) {
+        result = result.filter((idea) => idea.tipo === appTypeFilter)
+      }
+
+      // Filtrar por lenguaje de programación
+      if (languageFilter) {
+        result = result.filter((idea) => idea.tecnologias.includes(languageFilter))
+      }
+
+      // Filtrar por framework
+      if (frameworkFilter) {
+        result = result.filter((idea) => idea.frameworks.includes(frameworkFilter))
+      }
+
+      // Filtrar por base de datos
+      if (databaseFilter) {
+        result = result.filter((idea) => idea.basesdedatos.includes(databaseFilter))
+      }
+
+      // Filtrar por nivel
+      if (nivelFilter) {
+        result = result.filter((idea) => idea.nivel === nivelFilter)
+      }
+
+      // Ordenar según la opción seleccionada
+      if (sortOption === "category") {
+        result.sort((a, b) => a.categoria.localeCompare(b.categoria))
+      } else if (sortOption === "language") {
+        result.sort((a, b) => a.tecnologias[0].localeCompare(b.tecnologias[0]))
+      } else if (sortOption === "framework") {
+        result.sort((a, b) => {
+          const frameworkA = a.frameworks.length > 0 ? a.frameworks[0] : ""
+          const frameworkB = b.frameworks.length > 0 ? b.frameworks[0] : ""
+          return frameworkA.localeCompare(frameworkB)
+        })
+      } else if (sortOption === "database") {
+        result.sort((a, b) => {
+          const databaseA = a.basesdedatos.length > 0 ? a.basesdedatos[0] : ""
+          const databaseB = b.basesdedatos.length > 0 ? b.basesdedatos[0] : ""
+          return databaseA.localeCompare(databaseB)
+        })
+      } else if (sortOption === "nivel") {
+        const nivelOrder = { Student: 0, Trainee: 1, Junior: 2, Senior: 3 }
+        result.sort((a, b) => nivelOrder[a.nivel] - nivelOrder[b.nivel])
+      }
+
+      setFilteredIdeas(result)
+    } catch (error) {
+      console.error("Error al filtrar ideas:", error)
+      setFilteredIdeas(projectIdeas)
     }
-
-    // Filtrar por lenguaje de programación
-    if (languageFilter) {
-      result = result.filter((idea) => idea.tecnologias.includes(languageFilter))
-    }
-
-    // Filtrar por framework
-    if (frameworkFilter) {
-      result = result.filter((idea) => idea.frameworks.includes(frameworkFilter))
-    }
-
-    // Filtrar por base de datos
-    if (databaseFilter) {
-      result = result.filter((idea) => idea.basesdedatos.includes(databaseFilter))
-    }
-
-    // Filtrar por nivel
-    if (nivelFilter) {
-      result = result.filter((idea) => idea.nivel === nivelFilter)
-    }
-
-    // Ordenar según la opción seleccionada
-    if (sortOption === "category") {
-      result.sort((a, b) => a.categoria.localeCompare(b.categoria))
-    } else if (sortOption === "language") {
-      result.sort((a, b) => a.tecnologias[0].localeCompare(b.tecnologias[0]))
-    } else if (sortOption === "framework") {
-      result.sort((a, b) => {
-        const frameworkA = a.frameworks.length > 0 ? a.frameworks[0] : ""
-        const frameworkB = b.frameworks.length > 0 ? b.frameworks[0] : ""
-        return frameworkA.localeCompare(frameworkB)
-      })
-    } else if (sortOption === "database") {
-      result.sort((a, b) => {
-        const databaseA = a.basesdedatos.length > 0 ? a.basesdedatos[0] : ""
-        const databaseB = b.basesdedatos.length > 0 ? b.basesdedatos[0] : ""
-        return databaseA.localeCompare(databaseB)
-      })
-    } else if (sortOption === "nivel") {
-      const nivelOrder = { Trainee: 1, Junior: 2, Senior: 3 }
-      result.sort((a, b) => nivelOrder[a.nivel] - nivelOrder[b.nivel])
-    }
-
-    setFilteredIdeas(result)
-  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, sortOption])
+  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, sortOption, mounted])
 
   useEffect(() => {
     if (selectedIdea !== null) {
@@ -84,6 +97,10 @@ export function ProjectIdeas() {
   const handleReset = () => {
     setIsVisible(false)
     setTimeout(() => setSelectedIdea(null), 300)
+  }
+
+  if (!mounted) {
+    return null
   }
 
   if (selectedIdea === null || !projectIdeas || projectIdeas.length === 0) {
@@ -153,6 +170,8 @@ export function ProjectIdeas() {
     }
 
     switch (nivel) {
+      case "Student":
+        return "bg-green-400/70"
       case "Trainee":
         return "bg-green-600/70"
       case "Junior":
