@@ -3,24 +3,17 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut, Settings } from "lucide-react"
+import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
-  const router = useRouter()
   const { user, signOut } = useAuth()
 
   useEffect(() => {
@@ -46,6 +39,7 @@ export function Navigation() {
   // Links that are only visible when logged in
   const authLinks = [
     { href: "/achievements", label: "Logros", icon: <Award className="w-5 h-5" /> },
+    { href: '/statistics", label  label: "Logros', icon: <Award className="w-5 h-5" /> },
     { href: "/statistics", label: "Estadísticas", icon: <BarChart2 className="w-5 h-5" /> },
   ]
 
@@ -91,19 +85,6 @@ export function Navigation() {
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Perfil</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Configuración</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Cerrar sesión</span>
@@ -156,26 +137,16 @@ export function Navigation() {
               </Link>
             ))}
             {user && (
-              <>
-                <Link
-                  href="/profile"
-                  className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white"
-                  onClick={closeMenu}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="font-fondamento">Perfil</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    signOut()
-                    closeMenu()
-                  }}
-                  className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-fondamento">Cerrar sesión</span>
-                </button>
-              </>
+              <button
+                onClick={() => {
+                  signOut()
+                  closeMenu()
+                }}
+                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-fondamento">Cerrar sesión</span>
+              </button>
             )}
             {!user && (
               <Link

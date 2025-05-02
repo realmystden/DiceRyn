@@ -28,7 +28,7 @@ export function LoginForm() {
 
     try {
       await signIn("email", { email, password })
-      router.push("/profile")
+      router.push("/")
     } catch (error: any) {
       setError(error.message || "Failed to sign in")
     } finally {
@@ -72,12 +72,7 @@ export function LoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Contraseña</Label>
-              <Link href="/auth/reset-password" className="text-sm text-purple-400 hover:text-purple-300">
-                ¿Olvidaste tu contraseña?
-              </Link>
-            </div>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               type="password"

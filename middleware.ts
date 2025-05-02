@@ -11,14 +11,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession()
 
   // Protected routes that require authentication
-  const protectedRoutes = [
-    "/profile",
-    "/profile/settings",
-    "/achievements",
-    "/statistics",
-    "/achievements/create",
-    "/projects/create",
-  ]
+  const protectedRoutes = ["/achievements", "/statistics"]
 
   // Check if the route is protected and user is not authenticated
   const isProtectedRoute = protectedRoutes.some(
@@ -35,11 +28,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/profile/:path*",
-    "/profile/settings/:path*",
-    "/achievements/:path*",
-    "/statistics/:path*",
-    "/projects/create/:path*",
-  ],
+  matcher: ["/achievements/:path*", "/statistics/:path*"],
 }
