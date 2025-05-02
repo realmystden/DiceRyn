@@ -15,68 +15,45 @@ import { SavedIdeasExport } from "@/components/saved-ideas-export"
 export default function SavedIdeasPage() {
   const { savedIdeas, toggleCompleted, removeSavedIdea, themeMode, currentColor } = useProjectIdeasStore()
   const [mounted, setMounted] = useState(false)
+  const [sortedIdeas, setSortedIdeas] = useState<any[]>([])
 
-  // Ordenar ideas guardadas por fecha (más recientes primero)
-  const sortedIdeas = [...savedIdeas].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
+  // Helper function to safely access project ideas
+  const getSafeIdea = (id: number) => {
+    const idea = projectIdeas.find((idea) => idea.id === id)
+    return (
+      idea || {
+        titulo: "Idea no encontrada",
+        descripcion: "Descripción no encontrada",
+        tecnologias: [],
+        categoria: "Desconocida",
+        tipo: "Desconocido",
+      }
+    )
+  }
+
+  // Helper function to format the date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const options: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }
+    return date.toLocaleDateString(undefined, options)
+  }
 
   // Aplicar el tema y color actual
   useEffect(() => {
     setMounted(true)
-    document.body.className = themeMode
-    document.body.style.background = currentColor
-  }, [themeMode, currentColor])
+    document.body.className = themeMode || ""
+    document.body.style.background = currentColor || ""
 
-  // Función para obtener una idea segura (con manejo de errores)
-  const getSafeIdea = (id: number) => {
-    // Verificar si el ID es válido
-    if (id <= 0 || id > projectIdeas.length) {
-      return {
-        titulo: "Idea no disponible",
-        descripcion: "Esta idea ya no está disponible",
-        categoria: "N/A",
-        tecnologias: [],
-        tipo: "Aplicación Web" as const,
-      }
+    // Solo ordenar las ideas después de que el componente esté montado
+    if (savedIdeas && Array.isArray(savedIdeas)) {
+      setSortedIdeas([...savedIdeas].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()))
+    } else {
+      setSortedIdeas([])
     }
-
-    // Intentar obtener la idea por su índice
-    try {
-      const idea = projectIdeas[id - 1]
-      return (
-        idea || {
-          titulo: "Idea no disponible",
-          descripcion: "Esta idea ya no está disponible",
-          categoria: "N/A",
-          tecnologias: [],
-          tipo: "Aplicación Web" as const,
-        }
-      )
-    } catch (error) {
-      console.error("Error al cargar idea:", error)
-      return {
-        titulo: "Idea no disponible",
-        descripcion: "Esta idea ya no está disponible",
-        categoria: "N/A",
-        tecnologias: [],
-        tipo: "Aplicación Web" as const,
-      }
-    }
-  }
-
-  // Formatear fecha
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat("es-ES", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date)
-  }
+  }, [themeMode, currentColor, savedIdeas])
 
   if (!mounted) {
-    return null // Evitar renderizado en el servidor
+    return <div className="min-h-screen flex items-center justify-center">Cargando...</div>
   }
 
   return (
@@ -99,14 +76,14 @@ export default function SavedIdeasPage() {
 
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <p className="font-fondamento text-lg opacity-80">
-            {savedIdeas.length === 0
+            {savedIdeas?.length || 0 === 0
               ? "No tienes ideas guardadas. Regresa a la página principal para encontrar nuevas ideas."
-              : `Tienes ${savedIdeas.length} ${savedIdeas.length === 1 ? "idea guardada" : "ideas guardadas"}.`}
+              : `Tienes ${savedIdeas?.length || 0} ${savedIdeas?.length || 0 === 1 ? "idea guardada" : "ideas guardadas"}.`}
           </p>
           <SavedIdeasExport />
         </div>
 
-        {savedIdeas.length === 0 ? (
+        {savedIdeas?.length || 0 === 0 ? (
           <div className="fantasy-card p-8 text-center">
             <Bookmark className="h-16 w-16 mx-auto mb-4 opacity-50" />
             <h2 className="text-2xl font-cinzel mb-4">No hay ideas guardadas</h2>

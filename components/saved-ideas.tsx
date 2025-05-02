@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Bookmark, Trash2, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,9 +15,19 @@ import Link from "next/link"
 export function SavedIdeas() {
   const { savedIdeas, toggleCompleted, removeSavedIdea } = useProjectIdeasStore()
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [sortedIdeas, setSortedIdeas] = useState<any[]>([])
 
-  // Ordenar ideas guardadas por fecha (más recientes primero)
-  const sortedIdeas = [...savedIdeas].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())
+  useEffect(() => {
+    setMounted(true)
+
+    // Solo ordenar las ideas después de que el componente esté montado
+    if (savedIdeas && Array.isArray(savedIdeas)) {
+      setSortedIdeas([...savedIdeas].sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()))
+    } else {
+      setSortedIdeas([])
+    }
+  }, [savedIdeas])
 
   // Formatear fecha
   const formatDate = (dateString: string) => {
@@ -68,13 +78,17 @@ export function SavedIdeas() {
     }
   }
 
+  if (!mounted) {
+    return null // No renderizar nada hasta que el componente esté montado
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" className="relative fantasy-button">
           <Bookmark className="mr-2 h-4 w-4" />
           <span className="font-fondamento">Ideas Guardadas</span>
-          {savedIdeas.length > 0 && <Badge className="ml-2 bg-primary">{savedIdeas.length}</Badge>}
+          {savedIdeas?.length || (0 > 0 && <Badge className="ml-2 bg-primary">{savedIdeas?.length || 0}</Badge>)}
         </Button>
       </SheetTrigger>
       <SheetContent className="overflow-y-auto fantasy-card border-gold-light/30">
