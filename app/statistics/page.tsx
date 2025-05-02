@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { useAuth } from "@/lib/auth/auth-provider"
-import { Loader2 } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function StatisticsPage() {
@@ -16,6 +16,7 @@ export default function StatisticsPage() {
   const [activeTab, setActiveTab] = useState("overview")
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
   const { user } = useAuth()
   const router = useRouter()
 
@@ -28,14 +29,21 @@ export default function StatisticsPage() {
 
     const fetchStats = async () => {
       try {
+        setLoading(true)
+        setError(null)
+
         const response = await fetch("/api/statistics")
+
         if (!response.ok) {
-          throw new Error("Failed to fetch statistics")
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || `Server responded with ${response.status}`)
         }
+
         const data = await response.json()
         setStats(data)
       } catch (error) {
         console.error("Error fetching statistics:", error)
+        setError(error instanceof Error ? error.message : "Failed to fetch statistics")
       } finally {
         setLoading(false)
       }
@@ -64,6 +72,31 @@ export default function StatisticsPage() {
     )
   }
 
+  if (error) {
+    return (
+      <PageLayout>
+        <div className="w-full max-w-6xl mx-auto">
+          <div className="fantasy-card p-6 mb-8">
+            <h1 className="text-3xl font-cinzel font-bold text-white mb-2">Estadísticas Detalladas</h1>
+            <div className="bg-red-900/50 border border-red-700 text-red-100 p-4 rounded-md flex items-start">
+              <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-fondamento mb-2">Error al cargar las estadísticas:</p>
+                <p className="text-sm">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded-md text-sm font-medium transition-colors"
+                >
+                  Intentar de nuevo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
   if (!stats) {
     return (
       <PageLayout>
@@ -73,6 +106,12 @@ export default function StatisticsPage() {
             <p className="text-gray-300 font-fondamento mb-6">
               No se pudieron cargar las estadísticas. Por favor, intenta de nuevo más tarde.
             </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-purple-700 hover:bg-purple-600 rounded-md text-sm font-medium transition-colors"
+            >
+              Intentar de nuevo
+            </button>
           </div>
         </div>
       </PageLayout>
@@ -83,7 +122,7 @@ export default function StatisticsPage() {
   const totalProjects = stats.totalProjects || 0
   const unlockedAchievements = stats.unlockedAchievements || 0
   const totalAchievements = stats.totalAchievements || 0
-  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100) || 0
+  const achievementPercentage = Math.round((unlockedAchievements / (totalAchievements || 1)) * 100) || 0
 
   const studentProjects = stats.studentProjects || 0
   const traineeProjects = stats.traineeProjects || 0
@@ -316,20 +355,25 @@ export default function StatisticsPage() {
                         <>
                           {/* Mostrar las combinaciones más comunes de tecnologías */}
                           <div className="space-y-2">
-                            {[...Array(Math.min(5, stats.completedProjects.length))].map((_, i) => (
-                              <div key={i} className="flex items-center">
-                                <div className="w-full bg-gray-700 rounded-full h-4">
-                                  <div
-                                    className="bg-gradient-to-r from-purple-600 to-indigo-600 h-4 rounded-full"
-                                    style={{ width: `${Math.max(20, 100 - i * 15)}%` }}
-                                  ></div>
+                            {[...Array(Math.min(5, stats.completedProjects.length))].map((_, i) => {
+                              const project = stats.completedProjects[i]
+                              const tech = project?.technologies?.[0] || "N/A"
+                              const framework = project?.frameworks?.[0] || "N/A"
+
+                              return (
+                                <div key={i} className="flex items-center">
+                                  <div className="w-full bg-gray-700 rounded-full h-4">
+                                    <div
+                                      className="bg-gradient-to-r from-purple-600 to-indigo-600 h-4 rounded-full"
+                                      style={{ width: `${Math.max(20, 100 - i * 15)}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="ml-2 text-sm text-gray-300 font-fondamento">
+                                    {tech} + {framework}
+                                  </span>
                                 </div>
-                                <span className="ml-2 text-sm text-gray-300 font-fondamento">
-                                  {stats.completedProjects[i]?.technologies[0]} +{" "}
-                                  {stats.completedProjects[i]?.frameworks[0] || "N/A"}
-                                </span>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
                         </>
                       ) : (

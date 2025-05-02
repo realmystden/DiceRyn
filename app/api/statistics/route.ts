@@ -1,26 +1,37 @@
 import { NextResponse } from "next/server"
-import { getSupabaseServer } from "@/lib/supabase/server"
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
+import { cookies } from "next/headers"
 
 export async function GET() {
-  const supabase = getSupabaseServer()
-
-  // Get the current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  // Use createServerComponentClient instead of getSupabaseServer for better reliability
+  const supabase = createServerComponentClient({ cookies })
 
   try {
+    // Get the current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+
+    if (userError) {
+      console.error("Auth error:", userError)
+      return NextResponse.json({ error: "Authentication error" }, { status: 401 })
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
     // Fetch completed projects
     const { data: completedProjects, error: projectsError } = await supabase
       .from("completed_projects")
       .select("*")
       .eq("user_id", user.id)
 
-    if (projectsError) throw projectsError
+    if (projectsError) {
+      console.error("Projects fetch error:", projectsError)
+      throw projectsError
+    }
 
     // Fetch achievements
     const { data: userAchievements, error: achievementsError } = await supabase
@@ -32,50 +43,65 @@ export async function GET() {
       `)
       .eq("user_id", user.id)
 
-    if (achievementsError) throw achievementsError
+    if (achievementsError) {
+      console.error("Achievements fetch error:", achievementsError)
+      throw achievementsError
+    }
 
     // Fetch all achievements for total count
     const { data: allAchievements, error: allAchievementsError } = await supabase.from("achievements").select("*")
 
-    if (allAchievementsError) throw allAchievementsError
+    if (allAchievementsError) {
+      console.error("All achievements fetch error:", allAchievementsError)
+      throw allAchievementsError
+    }
+
+    // Handle case where data might be null
+    const safeCompletedProjects = completedProjects || []
+    const safeUserAchievements = userAchievements || []
+    const safeAllAchievements = allAchievements || []
 
     // Process the data
-    const achievements = userAchievements.map((item) => ({
+    const achievements = safeUserAchievements.map((item) => ({
       ...item.achievements,
       completed: true,
       completedAt: item.completed_at,
     }))
 
     // Calculate statistics
-    const studentProjects = completedProjects.filter((p) => p.level === "Student").length
-    const traineeProjects = completedProjects.filter((p) => p.level === "Trainee").length
-    const juniorProjects = completedProjects.filter((p) => p.level === "Junior").length
-    const seniorProjects = completedProjects.filter((p) => p.level === "Senior").length
+    const studentProjects = safeCompletedProjects.filter((p) => p.level === "Student").length
+    const traineeProjects = safeCompletedProjects.filter((p) => p.level === "Trainee").length
+    const juniorProjects = safeCompletedProjects.filter((p) => p.level === "Junior").length
+    const seniorProjects = safeCompletedProjects.filter((p) => p.level === "Senior").length
 
     // Calculate language statistics
     const languages = new Set<string>()
-    completedProjects.forEach((project) => {
-      project.technologies.forEach((tech) => languages.add(tech))
+    safeCompletedProjects.forEach((project) => {
+      if (project.technologies && Array.isArray(project.technologies)) {
+        project.technologies.forEach((tech) => languages.add(tech))
+      }
     })
 
     const languageStats = Array.from(languages)
       .map((lang) => ({
         name: lang,
-        count: completedProjects.filter((p) => p.technologies.includes(lang)).length,
+        count: safeCompletedProjects.filter((p) => p.technologies && p.technologies.includes(lang)).length,
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
 
     // Calculate framework statistics
     const frameworks = new Set<string>()
-    completedProjects.forEach((project) => {
-      project.frameworks.forEach((framework) => frameworks.add(framework))
+    safeCompletedProjects.forEach((project) => {
+      if (project.frameworks && Array.isArray(project.frameworks)) {
+        project.frameworks.forEach((framework) => frameworks.add(framework))
+      }
     })
 
     const frameworkStats = Array.from(frameworks)
       .map((framework) => ({
         name: framework,
-        count: completedProjects.filter((p) => p.frameworks.includes(framework)).length,
+        count: safeCompletedProjects.filter((p) => p.frameworks && p.frameworks.includes(framework)).length,
       }))
       .filter((item) => item.count > 0)
       .sort((a, b) => b.count - a.count)
@@ -83,14 +109,16 @@ export async function GET() {
 
     // Calculate database statistics
     const databases = new Set<string>()
-    completedProjects.forEach((project) => {
-      project.databases.forEach((db) => databases.add(db))
+    safeCompletedProjects.forEach((project) => {
+      if (project.databases && Array.isArray(project.databases)) {
+        project.databases.forEach((db) => databases.add(db))
+      }
     })
 
     const databaseStats = Array.from(databases)
       .map((db) => ({
         name: db,
-        count: completedProjects.filter((p) => p.databases.includes(db)).length,
+        count: safeCompletedProjects.filter((p) => p.databases && p.databases.includes(db)).length,
       }))
       .filter((item) => item.count > 0)
       .sort((a, b) => b.count - a.count)
@@ -113,12 +141,14 @@ export async function GET() {
     }
 
     // Count projects by month
-    completedProjects.forEach((project) => {
-      const date = new Date(project.completed_at)
-      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
+    safeCompletedProjects.forEach((project) => {
+      if (project.completed_at) {
+        const date = new Date(project.completed_at)
+        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
 
-      if (projectsByMonth[monthKey]) {
-        projectsByMonth[monthKey].count++
+        if (projectsByMonth[monthKey]) {
+          projectsByMonth[monthKey].count++
+        }
       }
     })
 
@@ -166,18 +196,20 @@ export async function GET() {
         count: 0,
       }))
 
-    completedProjects.forEach((project) => {
-      const date = new Date(project.completed_at)
-      const dayOfWeek = date.getDay() // 0-6
-      projectsByDay[dayOfWeek].count++
+    safeCompletedProjects.forEach((project) => {
+      if (project.completed_at) {
+        const date = new Date(project.completed_at)
+        const dayOfWeek = date.getDay() // 0-6
+        projectsByDay[dayOfWeek].count++
+      }
     })
 
     return NextResponse.json({
-      completedProjects,
+      completedProjects: safeCompletedProjects,
       achievements,
-      totalProjects: completedProjects.length,
+      totalProjects: safeCompletedProjects.length,
       unlockedAchievements: achievements.length,
-      totalAchievements: allAchievements.length,
+      totalAchievements: safeAllAchievements.length,
       studentProjects,
       traineeProjects,
       juniorProjects,
@@ -189,7 +221,7 @@ export async function GET() {
       projectsByDay,
     })
   } catch (error) {
-    console.error("Error fetching statistics:", error)
+    console.error("Error in statistics API route:", error)
     return NextResponse.json({ error: "Failed to fetch statistics" }, { status: 500 })
   }
 }
