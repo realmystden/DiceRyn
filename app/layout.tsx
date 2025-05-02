@@ -1,27 +1,31 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
 import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { AuthProvider } from "@/lib/auth/auth-provider"
-import { Toaster } from "@/components/ui/toaster"
+import { AchievementNotification } from "@/components/achievement-notification"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "DiceRyn - Generador de Ideas de Proyectos",
-  description: "Genera ideas aleatorias para tus proyectos de programación y desarrollo",
+  description: "Generador de ideas de proyectos para desarrolladores",
     generator: 'v0.dev'
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
     <html lang="es">
-      <body className="bg-[#0a0a0c] text-white min-h-screen flex flex-col">
-        <AuthProvider>
+      <body className={inter.className}>
+        <div className="min-h-screen bg-[#0a0a0c] text-white">
           <Navigation />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-          <Toaster />
-        </AuthProvider>
+          <main className="container mx-auto px-4 py-8">{children}</main>
+          <AchievementNotification />
+        </div>
       </body>
     </html>
   )

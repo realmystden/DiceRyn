@@ -2,82 +2,48 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useRouter } from "next/navigation"
+import { useProjectIdeasStore } from "@/lib/store"
 import { PageLayout } from "@/components/page-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { Loader2 } from "lucide-react"
-import { useAuth } from "@/lib/auth/auth-provider"
-import { achievementsService, type Achievement, type CompletedProject } from "@/lib/services/achievements-service"
 
 export default function StatisticsPage() {
   const [mounted, setMounted] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
-  const [achievements, setAchievements] = useState<Achievement[]>([])
-  const [completedProjects, setCompletedProjects] = useState<CompletedProject[]>([])
 
-  const { user } = useAuth()
-  const router = useRouter()
+  const {
+    completedProjects,
+    getTotalCompletedProjects,
+    getCompletedProjectsByLevel,
+    getCompletedProjectsByLanguage,
+    getCompletedProjectsByFramework,
+    getCompletedProjectsByDatabase,
+    getConsecutiveDaysStreak,
+    achievements,
+  } = useProjectIdeasStore()
 
   useEffect(() => {
     setMounted(true)
+  }, [])
 
-    if (!user) {
-      router.push("/auth/login?redirect=/statistics")
-      return
-    }
-
-    const fetchData = async () => {
-      setLoading(true)
-
-      // Fetch achievements and completed projects
-      const [achievementsResult, projectsResult] = await Promise.all([
-        achievementsService.getUserAchievements(),
-        achievementsService.getUserCompletedProjects(),
-      ])
-
-      if (!achievementsResult.error) {
-        setAchievements(achievementsResult.achievements)
-      }
-
-      if (!projectsResult.error) {
-        setCompletedProjects(projectsResult.projects)
-      }
-
-      setLoading(false)
-    }
-
-    fetchData()
-  }, [user, router])
-
-  if (!mounted || !user) {
+  if (!mounted) {
     return null
   }
 
-  if (loading) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-          <span className="ml-2 text-white font-fondamento">Cargando estadísticas...</span>
-        </div>
-      </PageLayout>
-    )
-  }
-
   // Calculate statistics
-  const totalProjects = completedProjects.length
+  const totalProjects = getTotalCompletedProjects()
   const unlockedAchievements = achievements.filter((a) => a.completed).length
   const totalAchievements = achievements.length
-  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100) || 0
+  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100)
 
-  const studentProjects = completedProjects.filter((p) => p.level === "Student").length
-  const traineeProjects = completedProjects.filter((p) => p.level === "Trainee").length
-  const juniorProjects = completedProjects.filter((p) => p.level === "Junior").length
-  const seniorProjects = completedProjects.filter((p) => p.level === "Senior").length
+  const studentProjects = getCompletedProjectsByLevel("Student")
+  const traineeProjects = getCompletedProjectsByLevel("Trainee")
+  const juniorProjects = getCompletedProjectsByLevel("Junior")
+  const seniorProjects = getCompletedProjectsByLevel("Senior")
+
+  const currentStreak = getConsecutiveDaysStreak()
 
   // Get top 5 languages
   const languages = new Set<string>()
@@ -88,7 +54,7 @@ export default function StatisticsPage() {
   const languageStats = Array.from(languages)
     .map((lang) => ({
       name: lang,
-      count: completedProjects.filter((p) => p.technologies.includes(lang)).length,
+      count: getCompletedProjectsByLanguage(lang),
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
@@ -102,7 +68,7 @@ export default function StatisticsPage() {
   const frameworkStats = Array.from(frameworks)
     .map((framework) => ({
       name: framework,
-      count: completedProjects.filter((p) => p.frameworks.includes(framework)).length,
+      count: getCompletedProjectsByFramework(framework),
     }))
     .filter((item) => item.count > 0)
     .sort((a, b) => b.count - a.count)
@@ -117,69 +83,35 @@ export default function StatisticsPage() {
   const databaseStats = Array.from(databases)
     .map((db) => ({
       name: db,
-      count: completedProjects.filter((p) => p.databases.includes(db)).length,
+      count: getCompletedProjectsByDatabase(db),
     }))
     .filter((item) => item.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
 
   // Get projects by month
-  const projectsByMonth: Record<string, { name: string; count: number }> = {}
-
-  // Initialize all months in the last year to ensure we show empty months
-  const today = new Date()
-  for (let i = 0; i < 12; i++) {
-    const date = new Date(today.getFullYear(), today.getMonth() - i, 1)
-    const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
-    const monthName = date.toLocaleString("default", { month: "long", year: "numeric" })
-
-    projectsByMonth[monthKey] = {
-      name: monthName,
-      count: 0,
-    }
-  }
-
-  // Count projects by month
+  const projectsByMonth: Record<string, number> = {}
   completedProjects.forEach((project) => {
     const date = new Date(project.completedAt)
     const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
+    const monthName = date.toLocaleString("default", { month: "long", year: "numeric" })
 
-    if (projectsByMonth[monthKey]) {
-      projectsByMonth[monthKey].count++
+    if (!projectsByMonth[monthKey]) {
+      projectsByMonth[monthKey] = {
+        name: monthName,
+        count: 0,
+      }
     }
+
+    projectsByMonth[monthKey].count++
   })
 
   const monthlyData = Object.values(projectsByMonth)
     .sort((a, b) => {
-      // Extract year and month from the name for proper sorting
-      const aMatch = a.name.match(/(\w+) (\d{4})/)
-      const bMatch = b.name.match(/(\w+) (\d{4})/)
-
-      if (!aMatch || !bMatch) return 0
-
-      const aYear = Number.parseInt(aMatch[2])
-      const bYear = Number.parseInt(bMatch[2])
+      const [aYear, aMonth] = a.name.split("-").map(Number)
+      const [bYear, bMonth] = b.name.split("-").map(Number)
 
       if (aYear !== bYear) return aYear - bYear
-
-      // Convert month names to numbers for sorting
-      const months = [
-        "enero",
-        "febrero",
-        "marzo",
-        "abril",
-        "mayo",
-        "junio",
-        "julio",
-        "agosto",
-        "septiembre",
-        "octubre",
-        "noviembre",
-        "diciembre",
-      ]
-      const aMonth = months.indexOf(aMatch[1].toLowerCase())
-      const bMonth = months.indexOf(bMatch[1].toLowerCase())
-
       return aMonth - bMonth
     })
     .slice(-6) // Last 6 months
@@ -230,7 +162,7 @@ export default function StatisticsPage() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="fantasy-card bg-gray-800/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-fondamento text-gray-400">Proyectos Completados</CardTitle>
@@ -254,16 +186,29 @@ export default function StatisticsPage() {
 
                 <Card className="fantasy-card bg-gray-800/50">
                   <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-fondamento text-gray-400">Racha Actual</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-cinzel font-bold text-white">
+                      {currentStreak} {currentStreak === 1 ? "día" : "días"}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="fantasy-card bg-gray-800/50">
+                  <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-fondamento text-gray-400">Nivel Más Completado</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-cinzel font-bold text-white">
-                      {[
-                        { level: "Student", count: studentProjects },
-                        { level: "Trainee", count: traineeProjects },
-                        { level: "Junior", count: juniorProjects },
-                        { level: "Senior", count: seniorProjects },
-                      ].sort((a, b) => b.count - a.count)[0]?.level || "N/A"}
+                      {
+                        [
+                          { level: "Student", count: studentProjects },
+                          { level: "Trainee", count: traineeProjects },
+                          { level: "Junior", count: juniorProjects },
+                          { level: "Senior", count: seniorProjects },
+                        ].sort((a, b) => b.count - a.count)[0].level
+                      }
                     </div>
                   </CardContent>
                 </Card>
@@ -422,7 +367,7 @@ export default function StatisticsPage() {
                                   ></div>
                                 </div>
                                 <span className="ml-2 text-sm text-gray-300 font-fondamento">
-                                  {completedProjects[i]?.technologies[0] || "N/A"} +{" "}
+                                  {completedProjects[i]?.technologies[0]} +{" "}
                                   {completedProjects[i]?.frameworks[0] || "N/A"}
                                 </span>
                               </div>
@@ -447,7 +392,7 @@ export default function StatisticsPage() {
                     <CardTitle className="font-cinzel text-white">Proyectos por Mes</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {completedProjects.length > 0 ? (
+                    {monthlyData.length > 0 ? (
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#444" />
@@ -495,6 +440,70 @@ export default function StatisticsPage() {
                     )}
                   </CardContent>
                 </Card>
+
+                <Card className="fantasy-card bg-gray-800/50">
+                  <CardHeader>
+                    <CardTitle className="font-cinzel text-white">Horas Más Productivas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {completedProjects.length > 0 ? (
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
+                          <h3 className="font-cinzel text-blue-400 mb-1">Mañana</h3>
+                          <p className="text-2xl font-bold text-white">
+                            {
+                              completedProjects.filter((p) => {
+                                const hour = new Date(p.completedAt).getHours()
+                                return hour >= 5 && hour < 12
+                              }).length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-400">5 AM - 12 PM</p>
+                        </div>
+                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
+                          <h3 className="font-cinzel text-yellow-400 mb-1">Tarde</h3>
+                          <p className="text-2xl font-bold text-white">
+                            {
+                              completedProjects.filter((p) => {
+                                const hour = new Date(p.completedAt).getHours()
+                                return hour >= 12 && hour < 18
+                              }).length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-400">12 PM - 6 PM</p>
+                        </div>
+                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
+                          <h3 className="font-cinzel text-orange-400 mb-1">Noche</h3>
+                          <p className="text-2xl font-bold text-white">
+                            {
+                              completedProjects.filter((p) => {
+                                const hour = new Date(p.completedAt).getHours()
+                                return hour >= 18 && hour < 22
+                              }).length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-400">6 PM - 10 PM</p>
+                        </div>
+                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
+                          <h3 className="font-cinzel text-purple-400 mb-1">Madrugada</h3>
+                          <p className="text-2xl font-bold text-white">
+                            {
+                              completedProjects.filter((p) => {
+                                const hour = new Date(p.completedAt).getHours()
+                                return hour >= 22 || hour < 5
+                              }).length
+                            }
+                          </p>
+                          <p className="text-xs text-gray-400">10 PM - 5 AM</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400 text-center py-10 font-fondamento">
+                        No hay suficientes datos para mostrar estadísticas por hora.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
@@ -527,7 +536,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.level === "Student" && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.level === "Student").length)) *
+                              achievements.filter((a) => a.level === "Student").length) *
                               100,
                           )}
                           className="h-2"
@@ -546,7 +555,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.level === "Trainee" && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.level === "Trainee").length)) *
+                              achievements.filter((a) => a.level === "Trainee").length) *
                               100,
                           )}
                           className="h-2"
@@ -565,7 +574,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.level === "Junior" && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.level === "Junior").length)) *
+                              achievements.filter((a) => a.level === "Junior").length) *
                               100,
                           )}
                           className="h-2"
@@ -584,7 +593,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.level === "Senior" && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.level === "Senior").length)) *
+                              achievements.filter((a) => a.level === "Senior").length) *
                               100,
                           )}
                           className="h-2"
@@ -603,7 +612,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.level === "Master" && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.level === "Master").length)) *
+                              achievements.filter((a) => a.level === "Master").length) *
                               100,
                           )}
                           className="h-2"
@@ -631,7 +640,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.requiredLanguages && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.requiredLanguages).length)) *
+                              achievements.filter((a) => a.requiredLanguages).length) *
                               100,
                           )}
                           className="h-2"
@@ -650,7 +659,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.requiredFrameworks && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.requiredFrameworks).length)) *
+                              achievements.filter((a) => a.requiredFrameworks).length) *
                               100,
                           )}
                           className="h-2"
@@ -669,7 +678,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.requiredDatabases && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.requiredDatabases).length)) *
+                              achievements.filter((a) => a.requiredDatabases).length) *
                               100,
                           )}
                           className="h-2"
@@ -688,7 +697,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.requiredCombination && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.requiredCombination).length)) *
+                              achievements.filter((a) => a.requiredCombination).length) *
                               100,
                           )}
                           className="h-2"
@@ -707,7 +716,7 @@ export default function StatisticsPage() {
                         <Progress
                           value={Math.round(
                             (achievements.filter((a) => a.requiredConsistency && a.completed).length /
-                              Math.max(1, achievements.filter((a) => a.requiredConsistency).length)) *
+                              achievements.filter((a) => a.requiredConsistency).length) *
                               100,
                           )}
                           className="h-2"
@@ -727,7 +736,7 @@ export default function StatisticsPage() {
                   <div className="space-y-3">
                     {achievements
                       .filter((a) => a.completed)
-                      .sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || "")) // Sort by completion date
+                      .sort((a, b) => b.id.localeCompare(a.id)) // Ordenar por ID como aproximación a la fecha
                       .slice(0, 5)
                       .map((achievement) => (
                         <div key={achievement.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-700/30">

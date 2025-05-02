@@ -68,12 +68,10 @@
     "@emotion/is-prop-valid": "latest",
     "immer": "latest",
     "use-sync-external-store": "latest",
-    "@supabase/supabase-js": "latest",
     "@react-three/drei": "latest",
     "framer-motion": "latest",
     "zustand": "latest",
-    "html2canvas": "latest",
-    "@supabase/auth-helpers-nextjs": "latest"
+    "html2canvas": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

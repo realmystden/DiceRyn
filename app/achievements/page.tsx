@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useRouter } from "next/navigation"
+import { useProjectIdeasStore, type AchievementLevel } from "@/lib/store"
 import { PageLayout } from "@/components/page-layout"
 import { ProgressBar } from "@/components/progress-bar"
 import { AchievementsList } from "@/components/achievements-list"
@@ -10,112 +10,32 @@ import { CompletedProjectsList } from "@/components/completed-projects-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { AchievementCertificate } from "@/components/achievement-certificate"
-import { Trophy, Loader2 } from "lucide-react"
-import { useAuth } from "@/lib/auth/auth-provider"
-import { achievementsService, type Achievement, type CompletedProject } from "@/lib/services/achievements-service"
-import type { AchievementLevel } from "@/lib/store"
+import { Trophy } from "lucide-react"
 
 export default function AchievementsPage() {
   const [mounted, setMounted] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null)
-  const [achievements, setAchievements] = useState<Achievement[]>([])
-  const [completedProjects, setCompletedProjects] = useState<CompletedProject[]>([])
+  const [selectedAchievement, setSelectedAchievement] = useState<any>(null)
 
-  const { user } = useAuth()
-  const router = useRouter()
+  const {
+    getCurrentLevel,
+    getLevelProgress,
+    getTotalCompletedProjects,
+    getCompletedProjectsByLevel,
+    getUnlockedAchievements,
+    achievements,
+  } = useProjectIdeasStore()
 
   useEffect(() => {
     setMounted(true)
+  }, [])
 
-    if (!user) {
-      router.push("/auth/login?redirect=/achievements")
-      return
-    }
-
-    const fetchData = async () => {
-      setLoading(true)
-
-      // Fetch achievements and completed projects
-      const [achievementsResult, projectsResult] = await Promise.all([
-        achievementsService.getUserAchievements(),
-        achievementsService.getUserCompletedProjects(),
-      ])
-
-      if (!achievementsResult.error) {
-        setAchievements(achievementsResult.achievements)
-      }
-
-      if (!projectsResult.error) {
-        setCompletedProjects(projectsResult.projects)
-      }
-
-      setLoading(false)
-    }
-
-    fetchData()
-  }, [user, router])
-
-  if (!mounted || !user) {
+  if (!mounted) {
     return null
-  }
-
-  if (loading) {
-    return (
-      <PageLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-          <span className="ml-2 text-white font-fondamento">Cargando logros...</span>
-        </div>
-      </PageLayout>
-    )
-  }
-
-  // Helper functions
-  const getCurrentLevel = (): AchievementLevel => {
-    const totalProjects = completedProjects.length
-    const traineeProjects = completedProjects.filter((p) => p.level === "Trainee").length
-    const juniorProjects = completedProjects.filter((p) => p.level === "Junior").length
-    const seniorProjects = completedProjects.filter((p) => p.level === "Senior").length
-
-    if (totalProjects >= 50) return "Master"
-    if (totalProjects >= 25 && seniorProjects >= 8) return "Senior"
-    if (totalProjects >= 15 && juniorProjects >= 5) return "Junior"
-    if (totalProjects >= 10 && traineeProjects >= 3) return "Trainee"
-    return "Student"
-  }
-
-  const getLevelProgress = (): number => {
-    const currentLevel = getCurrentLevel()
-    const totalProjects = completedProjects.length
-
-    switch (currentLevel) {
-      case "Student":
-        return Math.min(100, (totalProjects / 10) * 100)
-      case "Trainee":
-        return Math.min(100, ((totalProjects - 10) / 5) * 100)
-      case "Junior":
-        return Math.min(100, ((totalProjects - 15) / 10) * 100)
-      case "Senior":
-        return Math.min(100, ((totalProjects - 25) / 25) * 100)
-      case "Master":
-        return 100
-      default:
-        return 0
-    }
-  }
-
-  const getCompletedProjectsByLevel = (level: AchievementLevel): number => {
-    return completedProjects.filter((p) => p.level === level).length
-  }
-
-  const getUnlockedAchievements = (): Achievement[] => {
-    return achievements.filter((a) => a.completed)
   }
 
   const currentLevel = getCurrentLevel()
   const levelProgress = getLevelProgress()
-  const totalProjects = completedProjects.length
+  const totalProjects = getTotalCompletedProjects()
   const unlockedAchievements = getUnlockedAchievements()
 
   const studentProjects = getCompletedProjectsByLevel("Student")
@@ -222,10 +142,10 @@ export default function AchievementsPage() {
                   <span className="font-fondamento">Ver Certificado</span>
                 </Button>
               </div>
-              <AchievementsList achievements={achievements} />
+              <AchievementsList />
             </TabsContent>
             <TabsContent value="projects">
-              <CompletedProjectsList projects={completedProjects} />
+              <CompletedProjectsList />
             </TabsContent>
           </Tabs>
         </div>
