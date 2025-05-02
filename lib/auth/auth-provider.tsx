@@ -17,6 +17,13 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Helper function to log only in development
+const devLog = (...args: any[]) => {
+  if (process.env.NODE_ENV === "development") {
+    console.log(...args)
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -36,13 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } = await supabase.auth.getSession()
 
         if (error) {
-          console.error("Error getting session:", error)
+          devLog("Error getting session:", error)
         } else {
           setSession(session)
           setUser(session?.user ?? null)
         }
       } catch (error) {
-        console.error("Unexpected error getting session:", error)
+        devLog("Unexpected error getting session:", error)
       } finally {
         setIsLoading(false)
       }
@@ -54,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.id)
+      devLog("Auth state changed:", event, session?.user?.id)
 
       setSession(session)
       setUser(session?.user ?? null)
@@ -94,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error
       }
     } catch (error) {
-      console.error("Error signing in:", error)
+      devLog("Error signing in:", error)
       throw error
     } finally {
       setIsLoading(false)
@@ -108,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error
       router.push("/")
     } catch (error) {
-      console.error("Error signing out:", error)
+      devLog("Error signing out:", error)
     } finally {
       setIsLoading(false)
     }
