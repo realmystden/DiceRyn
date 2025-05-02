@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { useAuth } from "@/lib/auth/auth-provider"
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function StatisticsPage() {
@@ -17,56 +17,79 @@ export default function StatisticsPage() {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const [isRetrying, setIsRetrying] = useState(false)
+  const { user, session } = useAuth()
   const router = useRouter()
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      setIsRetrying(false)
+
+      console.log("Fetching statistics...")
+      const response = await fetch("/api/statistics", {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      })
+
+      console.log("Response status:", response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.error("API error response:", errorData)
+        throw new Error(errorData.error || errorData.details || `Server responded with ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Statistics data received:", Object.keys(data))
+      setStats(data)
+    } catch (error) {
+      console.error("Error fetching statistics:", error)
+      setError(error instanceof Error ? error.message : "Failed to fetch statistics")
+    } finally {
+      setLoading(false)
+      setIsRetrying(false)
+    }
+  }
 
   useEffect(() => {
     setMounted(true)
 
-    if (!user) {
+    if (!user && !loading) {
+      router.push("/auth/login?redirect=/statistics")
       return
     }
 
-    const fetchStats = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        const response = await fetch("/api/statistics")
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.error || `Server responded with ${response.status}`)
-        }
-
-        const data = await response.json()
-        setStats(data)
-      } catch (error) {
-        console.error("Error fetching statistics:", error)
-        setError(error instanceof Error ? error.message : "Failed to fetch statistics")
-      } finally {
-        setLoading(false)
-      }
+    if (user) {
+      fetchStats()
     }
+  }, [user, router])
 
+  const handleRetry = () => {
+    setIsRetrying(true)
     fetchStats()
-  }, [user])
+  }
 
   if (!mounted) {
     return null
   }
 
-  if (!user) {
+  if (!user && !loading) {
     router.push("/auth/login?redirect=/statistics")
     return null
   }
 
-  if (loading) {
+  if (loading || isRetrying) {
     return (
       <PageLayout>
-        <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
-          <span className="ml-2 text-white font-fondamento">Cargando estadísticas...</span>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 text-purple-500 animate-spin mb-4" />
+          <span className="text-white font-fondamento">
+            {isRetrying ? "Reintentando..." : "Cargando estadísticas..."}
+          </span>
         </div>
       </PageLayout>
     )
@@ -78,18 +101,35 @@ export default function StatisticsPage() {
         <div className="w-full max-w-6xl mx-auto">
           <div className="fantasy-card p-6 mb-8">
             <h1 className="text-3xl font-cinzel font-bold text-white mb-2">Estadísticas Detalladas</h1>
-            <div className="bg-red-900/50 border border-red-700 text-red-100 p-4 rounded-md flex items-start">
+            <div className="bg-red-900/50 border border-red-700 text-red-100 p-4 rounded-md flex items-start mb-6">
               <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-fondamento mb-2">Error al cargar las estadísticas:</p>
                 <p className="text-sm">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 rounded-md text-sm font-medium transition-colors"
-                >
-                  Intentar de nuevo
-                </button>
               </div>
+            </div>
+
+            <div className="text-center">
+              <p className="text-gray-300 font-fondamento mb-4">
+                Estamos trabajando para resolver este problema. Por favor, intenta de nuevo más tarde.
+              </p>
+              <button
+                onClick={handleRetry}
+                disabled={isRetrying}
+                className="px-4 py-2 bg-purple-700 hover:bg-purple-600 rounded-md text-sm font-medium transition-colors flex items-center mx-auto"
+              >
+                {isRetrying ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Reintentando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Intentar de nuevo
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -107,10 +147,21 @@ export default function StatisticsPage() {
               No se pudieron cargar las estadísticas. Por favor, intenta de nuevo más tarde.
             </p>
             <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-purple-700 hover:bg-purple-600 rounded-md text-sm font-medium transition-colors"
+              onClick={handleRetry}
+              disabled={isRetrying}
+              className="px-4 py-2 bg-purple-700 hover:bg-purple-600 rounded-md text-sm font-medium transition-colors flex items-center mx-auto"
             >
-              Intentar de nuevo
+              {isRetrying ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Reintentando...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Intentar de nuevo
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -118,7 +169,7 @@ export default function StatisticsPage() {
     )
   }
 
-  // Calculate statistics
+  // Calculate statistics with safe defaults
   const totalProjects = stats.totalProjects || 0
   const unlockedAchievements = stats.unlockedAchievements || 0
   const totalAchievements = stats.totalAchievements || 0
@@ -356,9 +407,9 @@ export default function StatisticsPage() {
                           {/* Mostrar las combinaciones más comunes de tecnologías */}
                           <div className="space-y-2">
                             {[...Array(Math.min(5, stats.completedProjects.length))].map((_, i) => {
-                              const project = stats.completedProjects[i]
-                              const tech = project?.technologies?.[0] || "N/A"
-                              const framework = project?.frameworks?.[0] || "N/A"
+                              const project = stats.completedProjects[i] || {}
+                              const tech = project.technologies?.[0] || "N/A"
+                              const framework = project.frameworks?.[0] || "N/A"
 
                               return (
                                 <div key={i} className="flex items-center">

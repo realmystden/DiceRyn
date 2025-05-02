@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer"
 import { AchievementNotification } from "@/components/achievement-notification"
 import { AuthProvider } from "@/lib/auth/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { DatabaseInitializer } from "@/components/database-initializer"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.className} flex flex-col min-h-screen bg-[#0a0a0c] text-white`}>
         <AuthProvider>
+          <DatabaseInitializer />
           <Navigation />
           <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
           <Footer />
