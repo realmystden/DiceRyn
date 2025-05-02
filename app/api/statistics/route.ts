@@ -27,7 +27,6 @@ export async function GET() {
     const user = userData.user
     console.log("User authenticated:", user.id)
 
-    // Start with a minimal response to test if the basic route works
     try {
       // Check if the completed_projects table exists
       const { count, error: tableCheckError } = await supabase
@@ -47,12 +46,12 @@ export async function GET() {
 
       console.log("Table check successful, count:", count)
 
-      // Fetch minimal data for testing
+      // Fetch completed projects
       const { data: completedProjects, error: projectsError } = await supabase
         .from("completed_projects")
-        .select("id, level, completed_at")
+        .select("*")
         .eq("user_id", user.id)
-        .limit(10)
+        .order("completed_at", { ascending: false })
 
       if (projectsError) {
         console.error("Projects fetch error:", projectsError)
@@ -67,33 +66,135 @@ export async function GET() {
 
       console.log("Projects fetched successfully:", completedProjects?.length || 0)
 
-      // Return a simplified response for now
+      // Get user achievements
+      const { data: userAchievements, error: achievementsError } = await supabase
+        .from("user_achievements")
+        .select("achievement_id")
+        .eq("user_id", user.id)
+
+      if (achievementsError) {
+        console.error("Achievements fetch error:", achievementsError)
+      }
+
+      // Get total number of achievements
+      const { count: totalAchievements, error: totalAchievementsError } = await supabase
+        .from("achievements")
+        .select("*", { count: "exact", head: true })
+
+      if (totalAchievementsError) {
+        console.error("Total achievements fetch error:", totalAchievementsError)
+      }
+
+      // Calculate statistics
+      const projectsByLevel = {
+        Student: completedProjects?.filter((p) => p.level === "Student").length || 0,
+        Trainee: completedProjects?.filter((p) => p.level === "Trainee").length || 0,
+        Junior: completedProjects?.filter((p) => p.level === "Junior").length || 0,
+        Senior: completedProjects?.filter((p) => p.level === "Senior").length || 0,
+      }
+
+      // Calculate language stats
+      const languageCounts: Record<string, number> = {}
+      completedProjects?.forEach((project) => {
+        project.technologies?.forEach((tech) => {
+          languageCounts[tech] = (languageCounts[tech] || 0) + 1
+        })
+      })
+
+      const languageStats = Object.entries(languageCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+
+      // Calculate framework stats
+      const frameworkCounts: Record<string, number> = {}
+      completedProjects?.forEach((project) => {
+        project.frameworks?.forEach((framework) => {
+          frameworkCounts[framework] = (frameworkCounts[framework] || 0) + 1
+        })
+      })
+
+      const frameworkStats = Object.entries(frameworkCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+
+      // Calculate database stats
+      const databaseCounts: Record<string, number> = {}
+      completedProjects?.forEach((project) => {
+        project.databases?.forEach((db) => {
+          databaseCounts[db] = (databaseCounts[db] || 0) + 1
+        })
+      })
+
+      const databaseStats = Object.entries(databaseCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+
+      // Calculate monthly data (last 6 months)
+      const monthNames = [
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
+      ]
+      const now = new Date()
+      const monthlyData = Array(6)
+        .fill(0)
+        .map((_, i) => {
+          const monthIndex = (now.getMonth() - i + 12) % 12
+          const year = now.getFullYear() - (now.getMonth() < monthIndex ? 1 : 0)
+          const month = monthNames[monthIndex]
+
+          // Count projects in this month
+          const count =
+            completedProjects?.filter((p) => {
+              const date = new Date(p.completed_at)
+              return date.getMonth() === monthIndex && date.getFullYear() === year
+            }).length || 0
+
+          return { name: `${month} ${year}`, count }
+        })
+        .reverse()
+
+      // Calculate projects by day of week
+      const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
+      const projectsByDay = dayNames.map((name) => {
+        const dayIndex = dayNames.indexOf(name)
+        const count =
+          completedProjects?.filter((p) => {
+            const date = new Date(p.completed_at)
+            return date.getDay() === dayIndex
+          }).length || 0
+
+        return { name, count }
+      })
+
+      // Return comprehensive statistics
       return NextResponse.json({
         success: true,
         totalProjects: completedProjects?.length || 0,
-        studentProjects: completedProjects?.filter((p) => p.level === "Student").length || 0,
-        traineeProjects: completedProjects?.filter((p) => p.level === "Trainee").length || 0,
-        juniorProjects: completedProjects?.filter((p) => p.level === "Junior").length || 0,
-        seniorProjects: completedProjects?.filter((p) => p.level === "Senior").length || 0,
-        // Provide empty arrays for the charts to render without errors
-        languageStats: [],
-        frameworkStats: [],
-        databaseStats: [],
-        monthlyData: [],
-        projectsByDay: [
-          { name: "Domingo", count: 0 },
-          { name: "Lunes", count: 0 },
-          { name: "Martes", count: 0 },
-          { name: "Miércoles", count: 0 },
-          { name: "Jueves", count: 0 },
-          { name: "Viernes", count: 0 },
-          { name: "Sábado", count: 0 },
-        ],
-        // Include sample data for testing
+        studentProjects: projectsByLevel.Student,
+        traineeProjects: projectsByLevel.Trainee,
+        juniorProjects: projectsByLevel.Junior,
+        seniorProjects: projectsByLevel.Senior,
+        languageStats,
+        frameworkStats,
+        databaseStats,
+        monthlyData,
+        projectsByDay,
         completedProjects: completedProjects || [],
-        unlockedAchievements: 0,
-        totalAchievements: 0,
-        achievements: [],
+        unlockedAchievements: userAchievements?.length || 0,
+        totalAchievements: totalAchievements || 0,
       })
     } catch (dbError) {
       console.error("Database operation error:", dbError)

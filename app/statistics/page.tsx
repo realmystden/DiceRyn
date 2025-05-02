@@ -66,7 +66,36 @@ export default function StatisticsPage() {
     if (user) {
       fetchStats()
     }
+
+    // Setup event listeners for page visibility and focus
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && user) {
+        fetchStats()
+      }
+    }
+
+    const handleFocus = () => {
+      if (user) {
+        fetchStats()
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("focus", handleFocus)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("focus", handleFocus)
+    }
   }, [user, router])
+
+  // Add an effect to react to URL changes (in case of direct navigation to this page after project completion)
+  useEffect(() => {
+    // This effect runs when the component mounts or when the router changes
+    if (user) {
+      fetchStats()
+    }
+  }, [router.asPath, user])
 
   const handleRetry = () => {
     setIsRetrying(true)
@@ -204,7 +233,18 @@ export default function StatisticsPage() {
         className="w-full max-w-6xl mx-auto"
       >
         <div className="fantasy-card p-6 mb-8">
-          <h1 className="text-3xl font-cinzel font-bold text-white mb-2">Estadísticas Detalladas</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-cinzel font-bold text-white">Estadísticas Detalladas</h1>
+            <button
+              onClick={handleRetry}
+              disabled={isRetrying}
+              className="px-3 py-1 bg-purple-700/30 hover:bg-purple-600/40 rounded-md text-sm font-medium transition-colors flex items-center"
+              title="Actualizar estadísticas"
+            >
+              {isRetrying ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            </button>
+          </div>
+
           <p className="text-gray-300 font-fondamento mb-6">
             Analiza tu progreso y rendimiento como desarrollador a través de estadísticas detalladas.
           </p>

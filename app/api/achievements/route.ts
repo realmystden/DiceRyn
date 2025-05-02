@@ -16,9 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all achievements
-    const { data: allAchievements, error: achievementsError } = await supabase
-      .from("achievements")
-      .select("*, badges(*)")
+    const { data: allAchievements, error: achievementsError } = await supabase.from("achievements").select("*")
 
     if (achievementsError) throw achievementsError
 
@@ -35,7 +33,6 @@ export async function GET(request: NextRequest) {
       const userAchievement = userAchievements?.find((ua) => ua.achievement_id === achievement.id)
       return {
         ...achievement,
-        badge: achievement.badges,
         completed: !!userAchievement,
         completedAt: userAchievement?.completed_at || null,
       }

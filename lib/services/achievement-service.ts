@@ -60,7 +60,6 @@ export interface CompletedProject {
   technologies: string[]
   frameworks: string[]
   databases: string[]
-  app_type: string
   completed_at: string
   created_at: string
 }
@@ -75,16 +74,13 @@ export const achievementService = {
 
       // If no session, return all achievements but mark them as not completed
       if (!session) {
-        const { data: allAchievements, error: achievementsError } = await supabase
-          .from("achievements")
-          .select("*, badges(*)")
+        const { data: allAchievements, error: achievementsError } = await supabase.from("achievements").select("*")
 
         if (achievementsError) throw achievementsError
 
         // Mark all achievements as not completed since user is not authenticated
         const achievements = allAchievements.map((achievement) => ({
           ...achievement,
-          badge: achievement.badges,
           completed: false,
           completedAt: null,
         }))
@@ -93,9 +89,7 @@ export const achievementService = {
       }
 
       // Get all achievements
-      const { data: allAchievements, error: achievementsError } = await supabase
-        .from("achievements")
-        .select("*, badges(*)")
+      const { data: allAchievements, error: achievementsError } = await supabase.from("achievements").select("*")
 
       if (achievementsError) throw achievementsError
 
@@ -112,7 +106,6 @@ export const achievementService = {
         const userAchievement = userAchievements?.find((ua) => ua.achievement_id === achievement.id)
         return {
           ...achievement,
-          badge: achievement.badges,
           completed: !!userAchievement,
           completedAt: userAchievement?.completed_at || null,
         }
@@ -201,7 +194,6 @@ export const achievementService = {
     technologies: string[]
     frameworks: string[]
     databases: string[]
-    app_type: string
   }): Promise<{ success: boolean; project: any; error: any }> {
     try {
       const {
@@ -222,7 +214,6 @@ export const achievementService = {
           technologies: projectData.technologies,
           frameworks: projectData.frameworks,
           databases: projectData.databases,
-          app_type: projectData.app_type,
           completed_at: new Date().toISOString(),
         })
         .select()
@@ -789,9 +780,7 @@ export const achievementService = {
       } = await supabase.auth.getSession()
 
       // Get all achievements
-      const { data: allAchievements, error: achievementsError } = await supabase
-        .from("achievements")
-        .select("*, badges(*)")
+      const { data: allAchievements, error: achievementsError } = await supabase.from("achievements").select("*")
 
       if (achievementsError) throw achievementsError
 
@@ -799,7 +788,6 @@ export const achievementService = {
       if (!session) {
         const achievements = allAchievements.map((achievement) => ({
           ...achievement,
-          badge: achievement.badges,
           completed: false,
           completedAt: null,
           progress: 0,
@@ -827,7 +815,6 @@ export const achievementService = {
 
         const achievementWithCompletion = {
           ...achievement,
-          badge: achievement.badges,
           completed: isCompleted,
           completedAt: userAchievement?.completed_at || null,
         }

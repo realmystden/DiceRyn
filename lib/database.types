@@ -1,194 +1,194 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
   public: {
     Tables: {
       achievements: {
         Row: {
-          id: string;
-          title: string;
-          description: string;
-          level: string;
-          icon: string;
-          required_languages?: string[] | null;
-          required_frameworks?: string[] | null;
-          required_databases?: string[] | null;
-          required_combination?: string[] | null;
-          required_consistency?: number | null;
-          created_at: string;
-        };
+          id: string
+          title: string
+          description: string
+          level: string
+          icon: string
+          required_languages?: string[] | null
+          required_frameworks?: string[] | null
+          required_databases?: string[] | null
+          required_combination?: string[] | null
+          required_consistency?: number | null
+          created_at: string
+        }
         Insert: {
-          id?: string;
-          title: string;
-          description: string;
-          level: string;
-          icon: string;
-          required_languages?: string[] | null;
-          required_frameworks?: string[] | null;
-          required_databases?: string[] | null;
-          required_combination?: string[] | null;
-          required_consistency?: number | null;
-          created_at?: string;
-        };
+          id?: string
+          title: string
+          description: string
+          level: string
+          icon: string
+          required_languages?: string[] | null
+          required_frameworks?: string[] | null
+          required_databases?: string[] | null
+          required_combination?: string[] | null
+          required_consistency?: number | null
+          created_at?: string
+        }
         Update: {
-          id?: string;
-          title?: string;
-          description?: string;
-          level?: string;
-          icon?: string;
-          required_languages?: string[] | null;
-          required_frameworks?: string[] | null;
-          required_databases?: string[] | null;
-          required_combination?: string[] | null;
-          required_consistency?: number | null;
-          created_at?: string;
-        };
-      };
+          id?: string
+          title?: string
+          description?: string
+          level?: string
+          icon?: string
+          required_languages?: string[] | null
+          required_frameworks?: string[] | null
+          required_databases?: string[] | null
+          required_combination?: string[] | null
+          required_consistency?: number | null
+          created_at?: string
+        }
+      }
       badges: {
         Row: {
-          id: string;
-          name: string;
-          description: string;
-          image_url: string;
-          created_at: string;
-        };
+          id: string
+          name: string
+          description: string
+          image_url: string
+          created_at: string
+        }
         Insert: {
-          id?: string;
-          name: string;
-          description: string;
-          image_url: string;
-          created_at?: string;
-        };
+          id?: string
+          name: string
+          description: string
+          image_url: string
+          created_at?: string
+        }
         Update: {
-          id?: string;
-          name?: string;
-          description?: string;
-          image_url?: string;
-          created_at?: string;
-        };
-      };
+          id?: string
+          name?: string
+          description?: string
+          image_url?: string
+          created_at?: string
+        }
+      }
       completed_projects: {
         Row: {
-          id: string;
-          user_id: string;
-          title: string;
-          description: string;
-          level: string;
-          technologies: string[];
-          frameworks: string[];
-          databases: string[];
-          completed_at: string;
-          created_at: string;
-        };
+          id: string
+          user_id: string
+          title: string
+          description: string
+          level: string
+          technologies: string[]
+          frameworks: string[]
+          databases: string[]
+          completed_at: string
+          created_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          title: string;
-          description: string;
-          level: string;
-          technologies: string[];
-          frameworks: string[];
-          databases: string[];
-          completed_at?: string;
-          created_at?: string;
-        };
+          id?: string
+          user_id: string
+          title: string
+          description: string
+          level: string
+          technologies: string[]
+          frameworks: string[]
+          databases: string[]
+          completed_at?: string
+          created_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          title?: string;
-          description?: string;
-          level?: string;
-          technologies?: string[];
-          frameworks?: string[];
-          databases?: string[];
-          completed_at?: string;
-          created_at?: string;
-        };
-      };
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          level?: string
+          technologies?: string[]
+          frameworks?: string[]
+          databases?: string[]
+          completed_at?: string
+          created_at?: string
+        }
+      }
       profiles: {
         Row: {
-          id: string;
-          username: string | null;
-          full_name: string | null;
-          avatar_url: string | null;
-          created_at: string;
-          updated_at: string | null;
-        };
+          id: string
+          username: string | null
+          full_name: string | null
+          avatar_url: string | null
+          created_at: string
+          updated_at: string | null
+        }
         Insert: {
-          id: string;
-          username?: string | null;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
+          id: string
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
         Update: {
-          id?: string;
-          username?: string | null;
-          full_name?: string | null;
-          avatar_url?: string | null;
-          created_at?: string;
-          updated_at?: string | null;
-        };
-      };
+          id?: string
+          username?: string | null
+          full_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          updated_at?: string | null
+        }
+      }
       user_achievements: {
         Row: {
-          id: string;
-          user_id: string;
-          achievement_id: string;
-          completed_at: string;
-          created_at: string;
-        };
+          id: string
+          user_id: string
+          achievement_id: string
+          completed_at: string
+          created_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          achievement_id: string;
-          completed_at?: string;
-          created_at?: string;
-        };
+          id?: string
+          user_id: string
+          achievement_id: string
+          completed_at?: string
+          created_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          achievement_id?: string;
-          completed_at?: string;
-          created_at?: string;
-        };
-      };
+          id?: string
+          user_id?: string
+          achievement_id?: string
+          completed_at?: string
+          created_at?: string
+        }
+      }
       user_badges: {
         Row: {
-          id: string;
-          user_id: string;
-          badge_id: string;
-          earned_at: string;
-          created_at: string;
-        };
+          id: string
+          user_id: string
+          badge_id: string
+          earned_at: string
+          created_at: string
+        }
         Insert: {
-          id?: string;
-          user_id: string;
-          badge_id: string;
-          earned_at?: string;
-          created_at?: string;
-        };
+          id?: string
+          user_id: string
+          badge_id: string
+          earned_at?: string
+          created_at?: string
+        }
         Update: {
-          id?: string;
-          user_id?: string;
-          badge_id?: string;
-          earned_at?: string;
-          created_at?: string;
-        };
-      };
-    };
+          id?: string
+          user_id?: string
+          badge_id?: string
+          earned_at?: string
+          created_at?: string
+        }
+      }
+    }
     Views: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Functions: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     Enums: {
-      [_ in never]: never;
-    };
+      [_ in never]: never
+    }
     CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
+      [_ in never]: never
+    }
+  }
 }

@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
         technologies: projectData.technologies || [],
         frameworks: projectData.frameworks || [],
         databases: projectData.databases || [],
-        app_type: projectData.app_type || "Other",
         completed_at: new Date().toISOString(),
       })
       .select()

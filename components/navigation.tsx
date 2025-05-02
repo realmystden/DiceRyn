@@ -2,177 +2,251 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { motion } from "framer-motion"
-import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronDown, Menu, X, LogOut, User, Settings, Award } from "lucide-react"
 import { useAuth } from "@/lib/auth/auth-provider"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const pathname = usePathname()
   const { user, signOut } = useAuth()
 
+  // Close mobile menu when changing pages
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setIsOpen(false)
+    setShowUserMenu(false)
+  }, [pathname])
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
+    setShowUserMenu(false)
   }
 
-  const closeMenu = () => {
-    setIsOpen(false)
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu)
   }
 
-  if (!mounted) return null
+  const handleSignOut = async () => {
+    await signOut()
+    setShowUserMenu(false)
+  }
 
-  // Base navigation links that are always visible
-  const publicLinks = [
-    { href: "/", label: "Inicio", icon: <Dice6 className="w-5 h-5" /> },
-    { href: "/tech-projects", label: "Proyectos Tech", icon: <BookOpen className="w-5 h-5" /> },
+  // Function to refresh statistics when navigating to the statistics page
+  const handleStatisticsClick = async () => {
+    if (pathname !== "/statistics" && user) {
+      try {
+        await fetch("/api/statistics/refresh", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+      } catch (error) {
+        console.error("Error refreshing statistics:", error)
+      }
+    }
+  }
+
+  const links = [
+    { href: "/", label: "Inicio" },
+    { href: "/tech-projects", label: "Proyectos Tech" },
+    { href: "/story-generator", label: "Generador de Historias" },
+    { href: "/anime-ideas", label: "Ideas de Anime" },
+    { href: "/3d-model-ideas", label: "Ideas de Modelos 3D" },
+    { href: "/achievements", label: "Logros" },
+    { href: "/statistics", label: "Estadísticas", onClick: handleStatisticsClick },
   ]
-
-  // Links that are only visible when logged in
-  const authLinks = [
-    { href: "/achievements", label: "Logros", icon: <Award className="w-5 h-5" /> },
-    { href: "/statistics", label: "Estadísticas", icon: <BarChart2 className="w-5 h-5" /> },
-  ]
-
-  // Combine links based on authentication status
-  const links = user ? [...publicLinks, ...authLinks] : publicLinks
 
   return (
-    <header className="bg-[#0a0a0c] border-b border-gray-800 sticky top-0 z-40">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center space-x-2" onClick={closeMenu}>
-            <Image src="/diceryn-logo.png" alt="DiceRyn Logo" width={40} height={40} />
-            <span className="text-xl font-cinzel font-bold text-white">DiceRyn</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-colors ${
-                  pathname === link.href
-                    ? "bg-purple-900/30 text-purple-300"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-              >
-                {link.icon}
-                <span className="font-fondamento">{link.label}</span>
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="focus:outline-none">
-                  <Avatar className="h-8 w-8 border border-gray-700">
-                    <AvatarImage src={user.user_metadata.avatar_url || "/placeholder.svg"} />
-                    <AvatarFallback>
-                      {user.user_metadata.full_name?.[0] || user.user_metadata.username?.[0] || user.email?.[0] || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Perfil</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Cerrar sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Iniciar sesión
-              </Link>
-            )}
-
-            {/* Mobile Menu Button */}
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-sm border-b border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link href="/" className="flex-shrink-0">
+              <Image src="/diceryn-logo.png" alt="Diceryn Logo" width={32} height={32} className="w-8 h-8" />
+            </Link>
+            <div className="hidden md:block">
+              <div className="ml-10 flex items-center space-x-4">
+                {links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={link.onClick}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out ${
+                      pathname === link.href
+                        ? "bg-gray-800 text-white"
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-4 flex items-center md:ml-6">
+              {user ? (
+                <div className="relative ml-3">
+                  <div>
+                    <button
+                      onClick={toggleUserMenu}
+                      className="flex items-center max-w-xs text-sm text-white hover:bg-gray-800 rounded-full p-2 focus:outline-none"
+                    >
+                      <span className="mr-2 font-fondamento">{user.email?.split("@")[0] || "Usuario"}</span>
+                      <ChevronDown
+                        className={`transition-transform duration-200 ${showUserMenu ? "transform rotate-180" : ""}`}
+                        size={16}
+                      />
+                    </button>
+                  </div>
+                  <AnimatePresence>
+                    {showUserMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-800 ring-1 ring-black ring-opacity-5 z-50"
+                      >
+                        <Link
+                          href="/profile"
+                          className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                        >
+                          <User className="mr-2" size={16} />
+                          Perfil
+                        </Link>
+                        <Link
+                          href="/achievements"
+                          className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                        >
+                          <Award className="mr-2" size={16} />
+                          Logros
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                        >
+                          <Settings className="mr-2" size={16} />
+                          Ajustes
+                        </Link>
+                        <button
+                          onClick={handleSignOut}
+                          className="flex w-full items-center px-4 py-2 text-sm text-gray-300 hover:bg-gray-700"
+                        >
+                          <LogOut className="mr-2" size={16} />
+                          Cerrar sesión
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Link href="/auth/login">
+                    <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
+                      Iniciar sesión
+                    </Button>
+                  </Link>
+                  <Link href="/auth/register">
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
+                      Registrarse
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="-mr-2 flex md:hidden">
             <button
-              className="md:hidden text-gray-300 hover:text-white focus:outline-none"
               onClick={toggleMenu}
-              aria-label="Toggle menu"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      <motion.div
-        initial={{ height: 0, opacity: 0 }}
-        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="md:hidden overflow-hidden"
-      >
-        <div className="container mx-auto px-4 pb-4">
-          <nav className="flex flex-col space-y-2">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
-                  pathname === link.href
-                    ? "bg-purple-900/30 text-purple-300"
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={closeMenu}
-              >
-                {link.icon}
-                <span className="font-fondamento">{link.label}</span>
-              </Link>
-            ))}
-            {user && (
-              <button
-                onClick={() => {
-                  signOut()
-                  closeMenu()
-                }}
-                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-fondamento">Cerrar sesión</span>
-              </button>
-            )}
-            {!user && (
-              <Link
-                href="/auth/login"
-                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors bg-purple-700 hover:bg-purple-600 text-white"
-                onClick={closeMenu}
-              >
-                <User className="w-5 h-5" />
-                <span className="font-fondamento">Iniciar sesión</span>
-              </Link>
-            )}
-          </nav>
-        </div>
-      </motion.div>
-    </header>
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="md:hidden overflow-hidden"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-800">
+              {links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={link.onClick}
+                  className={`block px-3 py-2 rounded-md text-base font-medium font-fondamento ${
+                    pathname === link.href
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            <div className="pt-4 pb-3 border-t border-gray-700">
+              {user ? (
+                <div className="px-2 space-y-1">
+                  <div className="px-3 py-2 text-gray-400 font-fondamento">{user.email || "Usuario"}</div>
+                  <Link
+                    href="/profile"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Perfil
+                  </Link>
+                  <Link
+                    href="/achievements"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Logros
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Ajustes
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full text-left block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <div className="px-2 space-y-1">
+                  <Link
+                    href="/auth/login"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+                  >
+                    Iniciar sesión
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    className="block px-3 py-2 rounded-md text-base font-medium bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    Registrarse
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
   )
 }
