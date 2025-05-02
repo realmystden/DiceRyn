@@ -2,134 +2,108 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useProjectIdeasStore } from "@/lib/store"
 import { PageLayout } from "@/components/page-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { useAuth } from "@/lib/auth/auth-provider"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function StatisticsPage() {
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
-
-  const {
-    completedProjects,
-    getTotalCompletedProjects,
-    getCompletedProjectsByLevel,
-    getCompletedProjectsByLanguage,
-    getCompletedProjectsByFramework,
-    getCompletedProjectsByDatabase,
-    getConsecutiveDaysStreak,
-    achievements,
-  } = useProjectIdeasStore()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState<any>(null)
+  const { user } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+
+    if (!user) {
+      return
+    }
+
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/statistics")
+        if (!response.ok) {
+          throw new Error("Failed to fetch statistics")
+        }
+        const data = await response.json()
+        setStats(data)
+      } catch (error) {
+        console.error("Error fetching statistics:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [user])
 
   if (!mounted) {
     return null
   }
 
+  if (!user) {
+    router.push("/auth/login?redirect=/statistics")
+    return null
+  }
+
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+          <span className="ml-2 text-white font-fondamento">Cargando estadísticas...</span>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <PageLayout>
+        <div className="w-full max-w-6xl mx-auto">
+          <div className="fantasy-card p-6 mb-8">
+            <h1 className="text-3xl font-cinzel font-bold text-white mb-2">Estadísticas Detalladas</h1>
+            <p className="text-gray-300 font-fondamento mb-6">
+              No se pudieron cargar las estadísticas. Por favor, intenta de nuevo más tarde.
+            </p>
+          </div>
+        </div>
+      </PageLayout>
+    )
+  }
+
   // Calculate statistics
-  const totalProjects = getTotalCompletedProjects()
-  const unlockedAchievements = achievements.filter((a) => a.completed).length
-  const totalAchievements = achievements.length
-  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100)
+  const totalProjects = stats.totalProjects || 0
+  const unlockedAchievements = stats.unlockedAchievements || 0
+  const totalAchievements = stats.totalAchievements || 0
+  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100) || 0
 
-  const studentProjects = getCompletedProjectsByLevel("Student")
-  const traineeProjects = getCompletedProjectsByLevel("Trainee")
-  const juniorProjects = getCompletedProjectsByLevel("Junior")
-  const seniorProjects = getCompletedProjectsByLevel("Senior")
+  const studentProjects = stats.studentProjects || 0
+  const traineeProjects = stats.traineeProjects || 0
+  const juniorProjects = stats.juniorProjects || 0
+  const seniorProjects = stats.seniorProjects || 0
 
-  const currentStreak = getConsecutiveDaysStreak()
+  // Get language statistics
+  const languageStats = stats.languageStats || []
 
-  // Get top 5 languages
-  const languages = new Set<string>()
-  completedProjects.forEach((project) => {
-    project.technologies.forEach((tech) => languages.add(tech))
-  })
+  // Get framework statistics
+  const frameworkStats = stats.frameworkStats || []
 
-  const languageStats = Array.from(languages)
-    .map((lang) => ({
-      name: lang,
-      count: getCompletedProjectsByLanguage(lang),
-    }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
+  // Get database statistics
+  const databaseStats = stats.databaseStats || []
 
-  // Get top 5 frameworks
-  const frameworks = new Set<string>()
-  completedProjects.forEach((project) => {
-    project.frameworks.forEach((framework) => frameworks.add(framework))
-  })
-
-  const frameworkStats = Array.from(frameworks)
-    .map((framework) => ({
-      name: framework,
-      count: getCompletedProjectsByFramework(framework),
-    }))
-    .filter((item) => item.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
-
-  // Get top 5 databases
-  const databases = new Set<string>()
-  completedProjects.forEach((project) => {
-    project.databases.forEach((db) => databases.add(db))
-  })
-
-  const databaseStats = Array.from(databases)
-    .map((db) => ({
-      name: db,
-      count: getCompletedProjectsByDatabase(db),
-    }))
-    .filter((item) => item.count > 0)
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
-
-  // Get projects by month
-  const projectsByMonth: Record<string, number> = {}
-  completedProjects.forEach((project) => {
-    const date = new Date(project.completedAt)
-    const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
-    const monthName = date.toLocaleString("default", { month: "long", year: "numeric" })
-
-    if (!projectsByMonth[monthKey]) {
-      projectsByMonth[monthKey] = {
-        name: monthName,
-        count: 0,
-      }
-    }
-
-    projectsByMonth[monthKey].count++
-  })
-
-  const monthlyData = Object.values(projectsByMonth)
-    .sort((a, b) => {
-      const [aYear, aMonth] = a.name.split("-").map(Number)
-      const [bYear, bMonth] = b.name.split("-").map(Number)
-
-      if (aYear !== bYear) return aYear - bYear
-      return aMonth - bMonth
-    })
-    .slice(-6) // Last 6 months
+  // Get monthly data
+  const monthlyData = stats.monthlyData || []
 
   // Get projects by day of week
-  const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"]
-  const projectsByDay = Array(7)
-    .fill(0)
-    .map((_, i) => ({
-      name: dayNames[i],
-      count: 0,
-    }))
-
-  completedProjects.forEach((project) => {
-    const date = new Date(project.completedAt)
-    const dayOfWeek = date.getDay() // 0-6
-    projectsByDay[dayOfWeek].count++
-  })
+  const projectsByDay = stats.projectsByDay || []
 
   return (
     <PageLayout>
@@ -146,7 +120,7 @@ export default function StatisticsPage() {
           </p>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="overview" className="font-fondamento">
                 Resumen
               </TabsTrigger>
@@ -156,13 +130,10 @@ export default function StatisticsPage() {
               <TabsTrigger value="time" className="font-fondamento">
                 Tiempo
               </TabsTrigger>
-              <TabsTrigger value="achievements" className="font-fondamento">
-                Logros
-              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card className="fantasy-card bg-gray-800/50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-fondamento text-gray-400">Proyectos Completados</CardTitle>
@@ -186,29 +157,16 @@ export default function StatisticsPage() {
 
                 <Card className="fantasy-card bg-gray-800/50">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-fondamento text-gray-400">Racha Actual</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-cinzel font-bold text-white">
-                      {currentStreak} {currentStreak === 1 ? "día" : "días"}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="fantasy-card bg-gray-800/50">
-                  <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-fondamento text-gray-400">Nivel Más Completado</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-cinzel font-bold text-white">
-                      {
-                        [
-                          { level: "Student", count: studentProjects },
-                          { level: "Trainee", count: traineeProjects },
-                          { level: "Junior", count: juniorProjects },
-                          { level: "Senior", count: seniorProjects },
-                        ].sort((a, b) => b.count - a.count)[0].level
-                      }
+                      {[
+                        { level: "Student", count: studentProjects },
+                        { level: "Trainee", count: traineeProjects },
+                        { level: "Junior", count: juniorProjects },
+                        { level: "Senior", count: seniorProjects },
+                      ].sort((a, b) => b.count - a.count)[0]?.level || "N/A"}
                     </div>
                   </CardContent>
                 </Card>
@@ -354,11 +312,11 @@ export default function StatisticsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {completedProjects.length > 0 ? (
+                      {stats.completedProjects && stats.completedProjects.length > 0 ? (
                         <>
                           {/* Mostrar las combinaciones más comunes de tecnologías */}
                           <div className="space-y-2">
-                            {[...Array(Math.min(5, completedProjects.length))].map((_, i) => (
+                            {[...Array(Math.min(5, stats.completedProjects.length))].map((_, i) => (
                               <div key={i} className="flex items-center">
                                 <div className="w-full bg-gray-700 rounded-full h-4">
                                   <div
@@ -367,8 +325,8 @@ export default function StatisticsPage() {
                                   ></div>
                                 </div>
                                 <span className="ml-2 text-sm text-gray-300 font-fondamento">
-                                  {completedProjects[i]?.technologies[0]} +{" "}
-                                  {completedProjects[i]?.frameworks[0] || "N/A"}
+                                  {stats.completedProjects[i]?.technologies[0]} +{" "}
+                                  {stats.completedProjects[i]?.frameworks[0] || "N/A"}
                                 </span>
                               </div>
                             ))}
@@ -419,7 +377,7 @@ export default function StatisticsPage() {
                     <CardTitle className="font-cinzel text-white">Proyectos por Día de la Semana</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {completedProjects.length > 0 ? (
+                    {projectsByDay.length > 0 ? (
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={projectsByDay} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#444" />
@@ -440,322 +398,7 @@ export default function StatisticsPage() {
                     )}
                   </CardContent>
                 </Card>
-
-                <Card className="fantasy-card bg-gray-800/50">
-                  <CardHeader>
-                    <CardTitle className="font-cinzel text-white">Horas Más Productivas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {completedProjects.length > 0 ? (
-                      <div className="grid grid-cols-4 gap-4">
-                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
-                          <h3 className="font-cinzel text-blue-400 mb-1">Mañana</h3>
-                          <p className="text-2xl font-bold text-white">
-                            {
-                              completedProjects.filter((p) => {
-                                const hour = new Date(p.completedAt).getHours()
-                                return hour >= 5 && hour < 12
-                              }).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-400">5 AM - 12 PM</p>
-                        </div>
-                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
-                          <h3 className="font-cinzel text-yellow-400 mb-1">Tarde</h3>
-                          <p className="text-2xl font-bold text-white">
-                            {
-                              completedProjects.filter((p) => {
-                                const hour = new Date(p.completedAt).getHours()
-                                return hour >= 12 && hour < 18
-                              }).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-400">12 PM - 6 PM</p>
-                        </div>
-                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
-                          <h3 className="font-cinzel text-orange-400 mb-1">Noche</h3>
-                          <p className="text-2xl font-bold text-white">
-                            {
-                              completedProjects.filter((p) => {
-                                const hour = new Date(p.completedAt).getHours()
-                                return hour >= 18 && hour < 22
-                              }).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-400">6 PM - 10 PM</p>
-                        </div>
-                        <div className="fantasy-card bg-gray-700/50 p-4 text-center">
-                          <h3 className="font-cinzel text-purple-400 mb-1">Madrugada</h3>
-                          <p className="text-2xl font-bold text-white">
-                            {
-                              completedProjects.filter((p) => {
-                                const hour = new Date(p.completedAt).getHours()
-                                return hour >= 22 || hour < 5
-                              }).length
-                            }
-                          </p>
-                          <p className="text-xs text-gray-400">10 PM - 5 AM</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-gray-400 text-center py-10 font-fondamento">
-                        No hay suficientes datos para mostrar estadísticas por hora.
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
               </div>
-            </TabsContent>
-
-            <TabsContent value="achievements" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="fantasy-card bg-gray-800/50">
-                  <CardHeader>
-                    <CardTitle className="font-cinzel text-white">Progreso de Logros</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-300 font-fondamento">Total</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {unlockedAchievements}/{totalAchievements}
-                          </span>
-                        </div>
-                        <Progress value={achievementPercentage} className="h-3" />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-green-400 font-fondamento">Student</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.level === "Student" && a.completed).length}/
-                            {achievements.filter((a) => a.level === "Student").length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.level === "Student" && a.completed).length /
-                              achievements.filter((a) => a.level === "Student").length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-green-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-blue-400 font-fondamento">Trainee</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.level === "Trainee" && a.completed).length}/
-                            {achievements.filter((a) => a.level === "Trainee").length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.level === "Trainee" && a.completed).length /
-                              achievements.filter((a) => a.level === "Trainee").length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-indigo-400 font-fondamento">Junior</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.level === "Junior" && a.completed).length}/
-                            {achievements.filter((a) => a.level === "Junior").length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.level === "Junior" && a.completed).length /
-                              achievements.filter((a) => a.level === "Junior").length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-indigo-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-purple-400 font-fondamento">Senior</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.level === "Senior" && a.completed).length}/
-                            {achievements.filter((a) => a.level === "Senior").length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.level === "Senior" && a.completed).length /
-                              achievements.filter((a) => a.level === "Senior").length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-purple-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-amber-400 font-fondamento">Master</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.level === "Master" && a.completed).length}/
-                            {achievements.filter((a) => a.level === "Master").length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.level === "Master" && a.completed).length /
-                              achievements.filter((a) => a.level === "Master").length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-amber-500"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="fantasy-card bg-gray-800/50">
-                  <CardHeader>
-                    <CardTitle className="font-cinzel text-white">Logros por Categoría</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-blue-400 font-fondamento">Lenguajes</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.requiredLanguages && a.completed).length}/
-                            {achievements.filter((a) => a.requiredLanguages).length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.requiredLanguages && a.completed).length /
-                              achievements.filter((a) => a.requiredLanguages).length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-indigo-400 font-fondamento">Frameworks</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.requiredFrameworks && a.completed).length}/
-                            {achievements.filter((a) => a.requiredFrameworks).length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.requiredFrameworks && a.completed).length /
-                              achievements.filter((a) => a.requiredFrameworks).length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-indigo-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-green-400 font-fondamento">Bases de Datos</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.requiredDatabases && a.completed).length}/
-                            {achievements.filter((a) => a.requiredDatabases).length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.requiredDatabases && a.completed).length /
-                              achievements.filter((a) => a.requiredDatabases).length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-green-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-purple-400 font-fondamento">Combinaciones</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.requiredCombination && a.completed).length}/
-                            {achievements.filter((a) => a.requiredCombination).length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.requiredCombination && a.completed).length /
-                              achievements.filter((a) => a.requiredCombination).length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-purple-500"
-                        />
-                      </div>
-
-                      <div>
-                        <div className="flex justify-between text-sm mb-1">
-                          <span className="text-amber-400 font-fondamento">Consistencia</span>
-                          <span className="text-gray-300 font-fondamento">
-                            {achievements.filter((a) => a.requiredConsistency && a.completed).length}/
-                            {achievements.filter((a) => a.requiredConsistency).length}
-                          </span>
-                        </div>
-                        <Progress
-                          value={Math.round(
-                            (achievements.filter((a) => a.requiredConsistency && a.completed).length /
-                              achievements.filter((a) => a.requiredConsistency).length) *
-                              100,
-                          )}
-                          className="h-2"
-                          indicatorClassName="bg-amber-500"
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card className="fantasy-card bg-gray-800/50">
-                <CardHeader>
-                  <CardTitle className="font-cinzel text-white">Logros Recientes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {achievements
-                      .filter((a) => a.completed)
-                      .sort((a, b) => b.id.localeCompare(a.id)) // Ordenar por ID como aproximación a la fecha
-                      .slice(0, 5)
-                      .map((achievement) => (
-                        <div key={achievement.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-700/30">
-                          <div className="text-2xl">{achievement.icon}</div>
-                          <div>
-                            <h4 className="font-cinzel text-white">{achievement.title}</h4>
-                            <p className="text-xs text-gray-400 font-fondamento">{achievement.description}</p>
-                          </div>
-                        </div>
-                      ))}
-
-                    {achievements.filter((a) => a.completed).length === 0 && (
-                      <p className="text-gray-400 text-center py-10 font-fondamento">
-                        No has desbloqueado ningún logro todavía.
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
           </Tabs>
         </div>

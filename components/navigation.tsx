@@ -5,12 +5,22 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Menu, X, Dice6, BookOpen, Award, BarChart2 } from "lucide-react"
+import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut } from "lucide-react"
+import { useAuth } from "@/lib/auth/auth-provider"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+  const { user, signOut } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -26,12 +36,20 @@ export function Navigation() {
 
   if (!mounted) return null
 
-  const links = [
+  // Base navigation links that are always visible
+  const publicLinks = [
     { href: "/", label: "Inicio", icon: <Dice6 className="w-5 h-5" /> },
     { href: "/tech-projects", label: "Proyectos Tech", icon: <BookOpen className="w-5 h-5" /> },
+  ]
+
+  // Links that are only visible when logged in
+  const authLinks = [
     { href: "/achievements", label: "Logros", icon: <Award className="w-5 h-5" /> },
     { href: "/statistics", label: "Estadísticas", icon: <BarChart2 className="w-5 h-5" /> },
   ]
+
+  // Combine links based on authentication status
+  const links = user ? [...publicLinks, ...authLinks] : publicLinks
 
   return (
     <header className="bg-[#0a0a0c] border-b border-gray-800 sticky top-0 z-40">
@@ -60,14 +78,49 @@ export function Navigation() {
             ))}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-300 hover:text-white focus:outline-none"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="focus:outline-none">
+                  <Avatar className="h-8 w-8 border border-gray-700">
+                    <AvatarImage src={user.user_metadata.avatar_url || "/placeholder.svg"} />
+                    <AvatarFallback>
+                      {user.user_metadata.full_name?.[0] || user.user_metadata.username?.[0] || user.email?.[0] || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Perfil</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Cerrar sesión</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Iniciar sesión
+              </Link>
+            )}
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-gray-300 hover:text-white focus:outline-none"
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+            >
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -95,6 +148,28 @@ export function Navigation() {
                 <span className="font-fondamento">{link.label}</span>
               </Link>
             ))}
+            {user && (
+              <button
+                onClick={() => {
+                  signOut()
+                  closeMenu()
+                }}
+                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-fondamento">Cerrar sesión</span>
+              </button>
+            )}
+            {!user && (
+              <Link
+                href="/auth/login"
+                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors bg-purple-700 hover:bg-purple-600 text-white"
+                onClick={closeMenu}
+              >
+                <User className="w-5 h-5" />
+                <span className="font-fondamento">Iniciar sesión</span>
+              </Link>
+            )}
           </nav>
         </div>
       </motion.div>
