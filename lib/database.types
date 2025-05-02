@@ -1,0 +1,42 @@
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+      badges: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+       user_badges: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+       user_achievements: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+       completed_projects: {
+        Row: any;
+        Insert: any;
+        Update: any;
+      };
+    };
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+  }
+}

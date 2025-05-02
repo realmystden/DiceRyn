@@ -17,13 +17,6 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Helper function to log only in development
-const devLog = (...args: any[]) => {
-  if (process.env.NODE_ENV === "development") {
-    console.log(...args)
-  }
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -36,23 +29,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       setIsLoading(true)
 
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      setSession(session)
+      setUser(session?.user ?? null)
 
-        if (error) {
-          devLog("Error getting session:", error)
-        } else {
-          setSession(session)
-          setUser(session?.user ?? null)
-        }
-      } catch (error) {
-        devLog("Unexpected error getting session:", error)
-      } finally {
-        setIsLoading(false)
-      }
+      setIsLoading(false)
     }
 
     getInitialSession()
@@ -60,22 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      devLog("Auth state changed:", event, session?.user?.id)
-
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
+      setIsLoading(false)
 
       // Refresh the page to update server components
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        router.refresh()
-      } else if (event === "SIGNED_OUT") {
-        setSession(null)
-        setUser(null)
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
         router.refresh()
       }
-
-      setIsLoading(false)
     })
 
     return () => {
@@ -89,19 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (provider === "email") {
         const { email, password } = options
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
+        await supabase.auth.signInWithPassword({ email, password })
       } else {
-        const { error } = await supabase.auth.signInWithOAuth({
+        await supabase.auth.signInWithOAuth({
           provider,
           options: {
             redirectTo: `${window.location.origin}/auth/callback`,
           },
         })
-        if (error) throw error
       }
     } catch (error) {
-      devLog("Error signing in:", error)
+      console.error("Error signing in:", error)
       throw error
     } finally {
       setIsLoading(false)
@@ -111,11 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setIsLoading(true)
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      await supabase.auth.signOut()
       router.push("/")
     } catch (error) {
-      devLog("Error signing out:", error)
+      console.error("Error signing out:", error)
     } finally {
       setIsLoading(false)
     }

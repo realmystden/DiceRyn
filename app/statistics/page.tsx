@@ -2,45 +2,82 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { useProjectIdeasStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 import { PageLayout } from "@/components/page-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { Loader2 } from "lucide-react"
+import { useAuth } from "@/lib/auth/auth-provider"
+import { achievementsService, type Achievement, type CompletedProject } from "@/lib/services/achievements-service"
 
 export default function StatisticsPage() {
   const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [completedProjects, setCompletedProjects] = useState<CompletedProject[]>([])
 
-  const {
-    completedProjects,
-    getTotalCompletedProjects,
-    getCompletedProjectsByLevel,
-    getCompletedProjectsByLanguage,
-    getCompletedProjectsByFramework,
-    getCompletedProjectsByDatabase,
-    achievements,
-  } = useProjectIdeasStore()
+  const { user } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
-  }, [])
 
-  if (!mounted) {
+    if (!user) {
+      router.push("/auth/login?redirect=/statistics")
+      return
+    }
+
+    const fetchData = async () => {
+      setLoading(true)
+
+      // Fetch achievements and completed projects
+      const [achievementsResult, projectsResult] = await Promise.all([
+        achievementsService.getUserAchievements(),
+        achievementsService.getUserCompletedProjects(),
+      ])
+
+      if (!achievementsResult.error) {
+        setAchievements(achievementsResult.achievements)
+      }
+
+      if (!projectsResult.error) {
+        setCompletedProjects(projectsResult.projects)
+      }
+
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [user, router])
+
+  if (!mounted || !user) {
     return null
   }
 
+  if (loading) {
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center h-[60vh]">
+          <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+          <span className="ml-2 text-white font-fondamento">Cargando estadísticas...</span>
+        </div>
+      </PageLayout>
+    )
+  }
+
   // Calculate statistics
-  const totalProjects = getTotalCompletedProjects()
+  const totalProjects = completedProjects.length
   const unlockedAchievements = achievements.filter((a) => a.completed).length
   const totalAchievements = achievements.length
-  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100)
+  const achievementPercentage = Math.round((unlockedAchievements / totalAchievements) * 100) || 0
 
-  const studentProjects = getCompletedProjectsByLevel("Student")
-  const traineeProjects = getCompletedProjectsByLevel("Trainee")
-  const juniorProjects = getCompletedProjectsByLevel("Junior")
-  const seniorProjects = getCompletedProjectsByLevel("Senior")
+  const studentProjects = completedProjects.filter((p) => p.level === "Student").length
+  const traineeProjects = completedProjects.filter((p) => p.level === "Trainee").length
+  const juniorProjects = completedProjects.filter((p) => p.level === "Junior").length
+  const seniorProjects = completedProjects.filter((p) => p.level === "Senior").length
 
   // Get top 5 languages
   const languages = new Set<string>()
@@ -51,7 +88,7 @@ export default function StatisticsPage() {
   const languageStats = Array.from(languages)
     .map((lang) => ({
       name: lang,
-      count: getCompletedProjectsByLanguage(lang),
+      count: completedProjects.filter((p) => p.technologies.includes(lang)).length,
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 5)
@@ -65,7 +102,7 @@ export default function StatisticsPage() {
   const frameworkStats = Array.from(frameworks)
     .map((framework) => ({
       name: framework,
-      count: getCompletedProjectsByFramework(framework),
+      count: completedProjects.filter((p) => p.frameworks.includes(framework)).length,
     }))
     .filter((item) => item.count > 0)
     .sort((a, b) => b.count - a.count)
@@ -80,7 +117,7 @@ export default function StatisticsPage() {
   const databaseStats = Array.from(databases)
     .map((db) => ({
       name: db,
-      count: getCompletedProjectsByDatabase(db),
+      count: completedProjects.filter((p) => p.databases.includes(db)).length,
     }))
     .filter((item) => item.count > 0)
     .sort((a, b) => b.count - a.count)
@@ -690,7 +727,7 @@ export default function StatisticsPage() {
                   <div className="space-y-3">
                     {achievements
                       .filter((a) => a.completed)
-                      .sort((a, b) => b.id.localeCompare(a.id)) // Ordenar por ID como aproximación a la fecha
+                      .sort((a, b) => (b.completedAt || "").localeCompare(a.completedAt || "")) // Sort by completion date
                       .slice(0, 5)
                       .map((achievement) => (
                         <div key={achievement.id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-700/30">

@@ -21,7 +21,7 @@ export function Navigation() {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, session, isLoading, signOut } = useAuth()
+  const { user, signOut } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -35,30 +35,22 @@ export function Navigation() {
     setIsOpen(false)
   }
 
-  // Navigate to a path and close the mobile menu
-  const navigateTo = (path: string) => {
-    router.push(path)
-    closeMenu()
-  }
-
   if (!mounted) return null
 
   // Base navigation links that are always visible
-  const baseLinks = [
+  const publicLinks = [
     { href: "/", label: "Inicio", icon: <Dice6 className="w-5 h-5" /> },
     { href: "/tech-projects", label: "Proyectos Tech", icon: <BookOpen className="w-5 h-5" /> },
+  ]
+
+  // Links that are only visible when logged in
+  const authLinks = [
     { href: "/achievements", label: "Logros", icon: <Award className="w-5 h-5" /> },
     { href: "/statistics", label: "Estadísticas", icon: <BarChart2 className="w-5 h-5" /> },
   ]
 
-  // Additional links that are only visible when logged in
-  const authLinks = [
-    { href: "/profile", label: "Perfil", icon: <User className="w-5 h-5" /> },
-    { href: "/profile/settings", label: "Configuración", icon: <Settings className="w-5 h-5" /> },
-  ]
-
   // Combine links based on authentication status
-  const links = user ? [...baseLinks, ...authLinks] : baseLinks
+  const links = user ? [...publicLinks, ...authLinks] : publicLinks
 
   return (
     <header className="bg-[#0a0a0c] border-b border-gray-800 sticky top-0 z-40">
@@ -70,13 +62,13 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-4">
+          <nav className="hidden md:flex space-x-8">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={`flex items-center space-x-1 px-3 py-2 rounded-md transition-colors ${
-                  pathname === link.href || pathname?.startsWith(link.href + "/")
+                  pathname === link.href
                     ? "bg-purple-900/30 text-purple-300"
                     : "text-gray-300 hover:bg-gray-800 hover:text-white"
                 }`}
@@ -88,7 +80,7 @@ export function Navigation() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            {!isLoading && user ? (
+            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="focus:outline-none">
                   <Avatar className="h-8 w-8 border border-gray-700">
@@ -100,13 +92,13 @@ export function Navigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer flex items-center">
+                    <Link href="/profile" className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       <span>Perfil</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile/settings" className="cursor-pointer flex items-center">
+                    <Link href="/profile/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
                       <span>Configuración</span>
                     </Link>
@@ -153,7 +145,7 @@ export function Navigation() {
                 key={link.href}
                 href={link.href}
                 className={`flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
-                  pathname === link.href || pathname?.startsWith(link.href + "/")
+                  pathname === link.href
                     ? "bg-purple-900/30 text-purple-300"
                     : "text-gray-300 hover:bg-gray-800 hover:text-white"
                 }`}
@@ -163,19 +155,29 @@ export function Navigation() {
                 <span className="font-fondamento">{link.label}</span>
               </Link>
             ))}
-            {!isLoading && user && (
-              <button
-                onClick={() => {
-                  signOut()
-                  closeMenu()
-                }}
-                className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-fondamento">Cerrar sesión</span>
-              </button>
+            {user && (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white"
+                  onClick={closeMenu}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="font-fondamento">Perfil</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    signOut()
+                    closeMenu()
+                  }}
+                  className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white w-full text-left"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-fondamento">Cerrar sesión</span>
+                </button>
+              </>
             )}
-            {!isLoading && !user && (
+            {!user && (
               <Link
                 href="/auth/login"
                 className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors bg-purple-700 hover:bg-purple-600 text-white"
