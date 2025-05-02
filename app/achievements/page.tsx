@@ -8,9 +8,13 @@ import { ProgressBar } from "@/components/progress-bar"
 import { AchievementsList } from "@/components/achievements-list"
 import { CompletedProjectsList } from "@/components/completed-projects-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { AchievementCertificate } from "@/components/achievement-certificate"
+import { Trophy } from "lucide-react"
 
 export default function AchievementsPage() {
   const [mounted, setMounted] = useState(false)
+  const [selectedAchievement, setSelectedAchievement] = useState<any>(null)
 
   const {
     getCurrentLevel,
@@ -18,6 +22,7 @@ export default function AchievementsPage() {
     getTotalCompletedProjects,
     getCompletedProjectsByLevel,
     getUnlockedAchievements,
+    achievements,
   } = useProjectIdeasStore()
 
   useEffect(() => {
@@ -52,6 +57,13 @@ export default function AchievementsPage() {
     Junior: "Completa 25 proyectos (incluyendo 8 de nivel Senior) para avanzar a Desarrollador Senior",
     Senior: "Completa 50 proyectos para convertirte en Maestro Desarrollador",
     Master: "¡Has alcanzado el nivel máximo! ¡Felicidades!",
+  }
+
+  const handleShowCertificate = (achievementId: string) => {
+    const achievement = achievements.find((a) => a.id === achievementId && a.completed)
+    if (achievement) {
+      setSelectedAchievement(achievement)
+    }
   }
 
   return (
@@ -114,6 +126,22 @@ export default function AchievementsPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="achievements">
+              <div className="mb-4 flex justify-between items-center">
+                <h3 className="text-lg font-cinzel text-white">Logros Desbloqueados</h3>
+                <Button
+                  variant="outline"
+                  className="fantasy-button border-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => {
+                    if (unlockedAchievements.length > 0) {
+                      handleShowCertificate(unlockedAchievements[0].id)
+                    }
+                  }}
+                  disabled={unlockedAchievements.length === 0}
+                >
+                  <Trophy className="mr-2 h-4 w-4" />
+                  <span className="font-fondamento">Ver Certificado</span>
+                </Button>
+              </div>
               <AchievementsList />
             </TabsContent>
             <TabsContent value="projects">
@@ -122,6 +150,14 @@ export default function AchievementsPage() {
           </Tabs>
         </div>
       </motion.div>
+
+      {selectedAchievement && (
+        <AchievementCertificate
+          achievement={selectedAchievement}
+          open={!!selectedAchievement}
+          onClose={() => setSelectedAchievement(null)}
+        />
+      )}
     </PageLayout>
   )
 }

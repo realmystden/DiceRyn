@@ -5,13 +5,13 @@ import { projectIdeas } from "./project-ideas"
 // Añadir nuevos tipos para los logros
 export type AchievementLevel = "Student" | "Trainee" | "Junior" | "Senior" | "Master"
 
-// Actualizar la interfaz Achievement para soportar combinaciones específicas
+// Actualizar la interfaz Achievement para soportar logros de consistencia
 export interface Achievement {
   id: string
   title: string
   description: string
   level: AchievementLevel
-  completed: boolean
+  completed: false
   icon?: string
   requiredProjects?: number
   requiredLanguages?: string[]
@@ -24,9 +24,28 @@ export interface Achievement {
   requiredCombination?: {
     languages?: string[]
     frameworks?: string[]
+    frameworks2?: string[]
     databases?: string[]
     count: number
   }
+  // Nuevos campos para logros de consistencia
+  requiredConsistency?: {
+    type: "daily" | "weekly" | "monthly" | "streak" | "sameDay" | "timeOfDay" | "dayOfWeek"
+    count: number
+    period?: number // Para períodos específicos (días, semanas, etc.)
+    dayType?: "weekday" | "weekend" // Para días específicos
+    timeRange?: "morning" | "afternoon" | "evening" | "night" // Para horarios específicos
+  }
+}
+
+export interface CompletedProject {
+  id: number
+  completedAt: number // Timestamp de cuando se completó el proyecto
+  title: string
+  level: string
+  technologies: string[]
+  frameworks: string[]
+  databases: string[]
 }
 
 interface ProjectIdeasStore {
@@ -80,20 +99,18 @@ interface ProjectIdeasStore {
   getCompletedProjectsByDatabase: (database: string) => number
   getCompletedProjectsByAppType: (appType: string) => number
 
+  // Nuevas funciones para verificar consistencia
+  getConsecutiveDaysStreak: () => number
+  getWeeklyCompletionCount: (weeks?: number) => number
+  getMonthlyCompletionCount: (months?: number) => number
+  getProjectsCompletedSameDay: (maxHours?: number) => number
+  getProjectsByTimeOfDay: (timeRange: "morning" | "afternoon" | "evening" | "night") => number
+  getProjectsByDayType: (dayType: "weekday" | "weekend") => number
+
   checkAndUnlockAchievements: () => void
 }
 
-export interface CompletedProject {
-  id: number
-  completedAt: number
-  title: string
-  level: string
-  technologies: string[]
-  frameworks: string[]
-  databases: string[]
-}
-
-// Actualizar la lista de logros predeterminados con muchos más logros tecnológicos
+// Actualizar la lista de logros predeterminados con logros de consistencia
 const defaultAchievements: Achievement[] = [
   // Logros existentes
   {
@@ -1531,6 +1548,324 @@ const defaultAchievements: Achievement[] = [
       count: 5,
     },
   },
+
+  // NUEVOS LOGROS DE CONSISTENCIA
+
+  // Logros por días consecutivos (streaks)
+  {
+    id: "three-day-streak",
+    title: "Racha de 3 Días",
+    description: "Completa proyectos durante 3 días consecutivos",
+    level: "Student",
+    completed: false,
+    icon: "🔥",
+    requiredConsistency: {
+      type: "streak",
+      count: 3,
+    },
+  },
+  {
+    id: "week-streak",
+    title: "Racha Semanal",
+    description: "Completa proyectos durante 7 días consecutivos",
+    level: "Trainee",
+    completed: false,
+    icon: "🔥🔥",
+    requiredConsistency: {
+      type: "streak",
+      count: 7,
+    },
+  },
+  {
+    id: "two-week-streak",
+    title: "Racha Quincenal",
+    description: "Completa proyectos durante 14 días consecutivos",
+    level: "Junior",
+    completed: false,
+    icon: "🔥🔥🔥",
+    requiredConsistency: {
+      type: "streak",
+      count: 14,
+    },
+  },
+  {
+    id: "month-streak",
+    title: "Racha Mensual",
+    description: "Completa proyectos durante 30 días consecutivos",
+    level: "Senior",
+    completed: false,
+    icon: "🔥🔥🔥🔥",
+    requiredConsistency: {
+      type: "streak",
+      count: 30,
+    },
+  },
+  {
+    id: "coding-machine",
+    title: "Máquina de Programación",
+    description: "Completa proyectos durante 60 días consecutivos",
+    level: "Master",
+    completed: false,
+    icon: "🤖🔥",
+    requiredConsistency: {
+      type: "streak",
+      count: 60,
+    },
+  },
+
+  // Logros por completar proyectos semanalmente
+  {
+    id: "weekly-coder",
+    title: "Programador Semanal",
+    description: "Completa al menos 3 proyectos por semana durante 2 semanas",
+    level: "Trainee",
+    completed: false,
+    icon: "📅",
+    requiredConsistency: {
+      type: "weekly",
+      count: 3,
+      period: 2,
+    },
+  },
+  {
+    id: "weekly-master",
+    title: "Maestro Semanal",
+    description: "Completa al menos 5 proyectos por semana durante 3 semanas",
+    level: "Junior",
+    completed: false,
+    icon: "📅🏆",
+    requiredConsistency: {
+      type: "weekly",
+      count: 5,
+      period: 3,
+    },
+  },
+  {
+    id: "weekly-champion",
+    title: "Campeón Semanal",
+    description: "Completa al menos 7 proyectos por semana durante 4 semanas",
+    level: "Senior",
+    completed: false,
+    icon: "📅👑",
+    requiredConsistency: {
+      type: "weekly",
+      count: 7,
+      period: 4,
+    },
+  },
+
+  // Logros por completar proyectos mensualmente
+  {
+    id: "monthly-coder",
+    title: "Programador Mensual",
+    description: "Completa al menos 10 proyectos en un mes",
+    level: "Trainee",
+    completed: false,
+    icon: "📆",
+    requiredConsistency: {
+      type: "monthly",
+      count: 10,
+      period: 1,
+    },
+  },
+  {
+    id: "monthly-master",
+    title: "Maestro Mensual",
+    description: "Completa al menos 15 proyectos en un mes durante 2 meses",
+    level: "Junior",
+    completed: false,
+    icon: "📆🏆",
+    requiredConsistency: {
+      type: "monthly",
+      count: 15,
+      period: 2,
+    },
+  },
+  {
+    id: "monthly-champion",
+    title: "Campeón Mensual",
+    description: "Completa al menos 20 proyectos en un mes durante 3 meses",
+    level: "Senior",
+    completed: false,
+    icon: "📆👑",
+    requiredConsistency: {
+      type: "monthly",
+      count: 20,
+      period: 3,
+    },
+  },
+
+  // Logros por completar múltiples proyectos en un solo día
+  {
+    id: "daily-double",
+    title: "Doble Diario",
+    description: "Completa 2 proyectos en un solo día",
+    level: "Student",
+    completed: false,
+    icon: "2️⃣",
+    requiredConsistency: {
+      type: "sameDay",
+      count: 2,
+    },
+  },
+  {
+    id: "triple-threat",
+    title: "Triple Amenaza",
+    description: "Completa 3 proyectos en un solo día",
+    level: "Trainee",
+    completed: false,
+    icon: "3️⃣",
+    requiredConsistency: {
+      type: "sameDay",
+      count: 3,
+    },
+  },
+  {
+    id: "coding-marathon",
+    title: "Maratón de Código",
+    description: "Completa 5 proyectos en un solo día",
+    level: "Junior",
+    completed: false,
+    icon: "5️⃣🏃",
+    requiredConsistency: {
+      type: "sameDay",
+      count: 5,
+    },
+  },
+  {
+    id: "coding-sprint",
+    title: "Sprint de Código",
+    description: "Completa 10 proyectos en un solo día",
+    level: "Senior",
+    completed: false,
+    icon: "🏃‍♂️💨",
+    requiredConsistency: {
+      type: "sameDay",
+      count: 10,
+    },
+  },
+
+  // Logros por completar proyectos en horarios específicos
+  {
+    id: "early-bird-coder",
+    title: "Programador Madrugador",
+    description: "Completa 5 proyectos entre las 5 AM y las 9 AM",
+    level: "Trainee",
+    completed: false,
+    icon: "🌅",
+    requiredConsistency: {
+      type: "timeOfDay",
+      count: 5,
+      timeRange: "morning",
+    },
+  },
+  {
+    id: "lunch-break-coder",
+    title: "Programador de Mediodía",
+    description: "Completa 5 proyectos entre las 12 PM y las 2 PM",
+    level: "Trainee",
+    completed: false,
+    icon: "🍽️",
+    requiredConsistency: {
+      type: "timeOfDay",
+      count: 5,
+      timeRange: "afternoon",
+    },
+  },
+  {
+    id: "night-owl-coder",
+    title: "Programador Nocturno",
+    description: "Completa 5 proyectos entre las 10 PM y las 4 AM",
+    level: "Trainee",
+    completed: false,
+    icon: "🦉",
+    requiredConsistency: {
+      type: "timeOfDay",
+      count: 5,
+      timeRange: "night",
+    },
+  },
+
+  // Logros por completar proyectos en días específicos
+  {
+    id: "weekend-warrior",
+    title: "Guerrero de Fin de Semana",
+    description: "Completa 10 proyectos durante fines de semana",
+    level: "Junior",
+    completed: false,
+    icon: "🏋️‍♂️",
+    requiredConsistency: {
+      type: "dayOfWeek",
+      count: 10,
+      dayType: "weekend",
+    },
+  },
+  {
+    id: "workday-warrior",
+    title: "Guerrero de Días Laborables",
+    description: "Completa 15 proyectos durante días laborables",
+    level: "Junior",
+    completed: false,
+    icon: "💼",
+    requiredConsistency: {
+      type: "dayOfWeek",
+      count: 15,
+      dayType: "weekday",
+    },
+  },
+
+  // Logros por patrones de consistencia avanzados
+  {
+    id: "balanced-coder",
+    title: "Programador Equilibrado",
+    description: "Completa al menos 1 proyecto cada día de la semana (lunes a domingo)",
+    level: "Senior",
+    completed: false,
+    icon: "⚖️",
+    requiredConsistency: {
+      type: "daily",
+      count: 7,
+    },
+  },
+  {
+    id: "consistent-learner",
+    title: "Aprendiz Constante",
+    description: "Completa al menos 1 proyecto por semana durante 8 semanas consecutivas",
+    level: "Junior",
+    completed: false,
+    icon: "📚",
+    requiredConsistency: {
+      type: "weekly",
+      count: 1,
+      period: 8,
+    },
+  },
+  {
+    id: "coding-habit",
+    title: "Hábito de Programación",
+    description: "Completa al menos 3 proyectos por semana durante 12 semanas consecutivas",
+    level: "Senior",
+    completed: false,
+    icon: "⏰",
+    requiredConsistency: {
+      type: "weekly",
+      count: 3,
+      period: 12,
+    },
+  },
+  {
+    id: "coding-lifestyle",
+    title: "Estilo de Vida de Programación",
+    description: "Completa al menos 10 proyectos por mes durante 6 meses consecutivos",
+    level: "Master",
+    completed: false,
+    icon: "🧠",
+    requiredConsistency: {
+      type: "monthly",
+      count: 10,
+      period: 6,
+    },
+  },
 ]
 
 export const useProjectIdeasStore = create<ProjectIdeasStore>()(
@@ -1696,7 +2031,256 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
         return get().achievements.filter((a) => a.completed)
       },
 
-      // Actualizar la función checkAndUnlockAchievements para verificar los nuevos logros
+      // Nuevas funciones para verificar consistencia
+      getConsecutiveDaysStreak: () => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Ordenar proyectos por fecha de completado
+        const sortedProjects = [...projects].sort((a, b) => a.completedAt - b.completedAt)
+
+        // Obtener fechas únicas (días) en los que se completaron proyectos
+        const uniqueDays = new Set<string>()
+        sortedProjects.forEach((project) => {
+          const date = new Date(project.completedAt)
+          const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+          uniqueDays.add(dateString)
+        })
+
+        const uniqueDaysArray = Array.from(uniqueDays)
+
+        // Verificar la racha actual
+        let currentStreak = 1
+        let maxStreak = 1
+
+        // Obtener la fecha actual
+        const today = new Date()
+        const todayString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`
+
+        // Si no hay proyectos completados hoy, la racha podría haberse roto
+        if (uniqueDaysArray[uniqueDaysArray.length - 1] !== todayString) {
+          const lastCompletionDate = new Date(sortedProjects[sortedProjects.length - 1].completedAt)
+          const yesterday = new Date(today)
+          yesterday.setDate(today.getDate() - 1)
+
+          // Si el último proyecto no se completó ayer o hoy, la racha se rompió
+          if (
+            lastCompletionDate.getDate() !== yesterday.getDate() ||
+            lastCompletionDate.getMonth() !== yesterday.getMonth() ||
+            lastCompletionDate.getFullYear() !== yesterday.getFullYear()
+          ) {
+            return 0
+          }
+        }
+
+        // Calcular la racha máxima
+        for (let i = 1; i < uniqueDaysArray.length; i++) {
+          const prevDate = new Date(uniqueDaysArray[i - 1].split("-").map(Number) as [number, number, number])
+          const currDate = new Date(uniqueDaysArray[i].split("-").map(Number) as [number, number, number])
+
+          // Verificar si las fechas son consecutivas
+          const diffTime = Math.abs(currDate.getTime() - prevDate.getTime())
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+          if (diffDays === 1) {
+            currentStreak++
+            maxStreak = Math.max(maxStreak, currentStreak)
+          } else {
+            currentStreak = 1
+          }
+        }
+
+        return maxStreak
+      },
+
+      getWeeklyCompletionCount: (weeks = 1) => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Obtener la fecha actual
+        const now = new Date()
+
+        // Calcular la fecha de inicio del período (hace 'weeks' semanas)
+        const startDate = new Date(now)
+        startDate.setDate(now.getDate() - weeks * 7)
+
+        // Filtrar proyectos completados en el período especificado
+        const projectsInPeriod = projects.filter(
+          (project) => project.completedAt >= startDate.getTime() && project.completedAt <= now.getTime(),
+        )
+
+        // Agrupar proyectos por semana
+        const weeklyProjects: { [weekKey: string]: number } = {}
+
+        projectsInPeriod.forEach((project) => {
+          const date = new Date(project.completedAt)
+          // Obtener el número de semana del año
+          const weekNumber = getWeekNumber(date)
+          const weekKey = `${date.getFullYear()}-W${weekNumber}`
+
+          if (!weeklyProjects[weekKey]) {
+            weeklyProjects[weekKey] = 0
+          }
+
+          weeklyProjects[weekKey]++
+        })
+
+        // Verificar si se cumple el requisito para todas las semanas
+        const weekKeys = Object.keys(weeklyProjects)
+        if (weekKeys.length < weeks) return 0
+
+        // Ordenar las semanas cronológicamente
+        weekKeys.sort()
+
+        // Tomar las últimas 'weeks' semanas
+        const recentWeeks = weekKeys.slice(-weeks)
+
+        // Encontrar el mínimo de proyectos completados en una semana
+        const minProjectsPerWeek = Math.min(...recentWeeks.map((week) => weeklyProjects[week]))
+
+        return minProjectsPerWeek
+      },
+
+      getMonthlyCompletionCount: (months = 1) => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Obtener la fecha actual
+        const now = new Date()
+
+        // Calcular la fecha de inicio del período (hace 'months' meses)
+        const startDate = new Date(now)
+        startDate.setMonth(now.getMonth() - months)
+
+        // Filtrar proyectos completados en el período especificado
+        const projectsInPeriod = projects.filter(
+          (project) => project.completedAt >= startDate.getTime() && project.completedAt <= now.getTime(),
+        )
+
+        // Agrupar proyectos por mes
+        const monthlyProjects: { [monthKey: string]: number } = {}
+
+        projectsInPeriod.forEach((project) => {
+          const date = new Date(project.completedAt)
+          const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`
+
+          if (!monthlyProjects[monthKey]) {
+            monthlyProjects[monthKey] = 0
+          }
+
+          monthlyProjects[monthKey]++
+        })
+
+        // Verificar si se cumple el requisito para todos los meses
+        const monthKeys = Object.keys(monthlyProjects)
+        if (monthKeys.length < months) return 0
+
+        // Ordenar los meses cronológicamente
+        monthKeys.sort()
+
+        // Tomar los últimos 'months' meses
+        const recentMonths = monthKeys.slice(-months)
+
+        // Encontrar el mínimo de proyectos completados en un mes
+        const minProjectsPerMonth = Math.min(...recentMonths.map((month) => monthlyProjects[month]))
+
+        return minProjectsPerMonth
+      },
+
+      getProjectsCompletedSameDay: (maxHours = 24) => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Agrupar proyectos por día
+        const projectsByDay: { [dayKey: string]: number[] } = {}
+
+        projects.forEach((project) => {
+          const date = new Date(project.completedAt)
+          const dayKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+
+          if (!projectsByDay[dayKey]) {
+            projectsByDay[dayKey] = []
+          }
+
+          projectsByDay[dayKey].push(project.completedAt)
+        })
+
+        // Encontrar el máximo de proyectos completados en un solo día
+        let maxProjectsInDay = 0
+
+        Object.values(projectsByDay).forEach((timestamps) => {
+          // Ordenar timestamps
+          timestamps.sort()
+
+          // Verificar cuántos proyectos se completaron dentro del período de maxHours
+          let maxInPeriod = 0
+
+          for (let i = 0; i < timestamps.length; i++) {
+            const startTime = timestamps[i]
+            const endTime = startTime + maxHours * 60 * 60 * 1000
+
+            // Contar proyectos en este período
+            const projectsInPeriod = timestamps.filter((time) => time >= startTime && time <= endTime).length
+
+            maxInPeriod = Math.max(maxInPeriod, projectsInPeriod)
+          }
+
+          maxProjectsInDay = Math.max(maxProjectsInDay, maxInPeriod)
+        })
+
+        return maxProjectsInDay
+      },
+
+      getProjectsByTimeOfDay: (timeRange) => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Definir rangos horarios
+        const timeRanges = {
+          morning: { start: 5, end: 11 }, // 5 AM - 11:59 AM
+          afternoon: { start: 12, end: 17 }, // 12 PM - 5:59 PM
+          evening: { start: 18, end: 21 }, // 6 PM - 9:59 PM
+          night: { start: 22, end: 4 }, // 10 PM - 4:59 AM (cruza la medianoche)
+        }
+
+        // Filtrar proyectos por rango horario
+        const projectsInTimeRange = projects.filter((project) => {
+          const date = new Date(project.completedAt)
+          const hour = date.getHours()
+
+          const range = timeRanges[timeRange]
+
+          // Manejar el caso especial de la noche (cruza la medianoche)
+          if (timeRange === "night") {
+            return hour >= range.start || hour <= range.end
+          }
+
+          // Para los demás rangos horarios
+          return hour >= range.start && hour <= range.end
+        })
+
+        return projectsInTimeRange.length
+      },
+
+      getProjectsByDayType: (dayType) => {
+        const projects = get().completedProjects
+        if (projects.length === 0) return 0
+
+        // Filtrar proyectos por tipo de día
+        const projectsByDayType = projects.filter((project) => {
+          const date = new Date(project.completedAt)
+          const dayOfWeek = date.getDay() // 0 = domingo, 6 = sábado
+
+          if (dayType === "weekend") {
+            return dayOfWeek === 0 || dayOfWeek === 6 // Fin de semana (sábado o domingo)
+          } else {
+            return dayOfWeek >= 1 && dayOfWeek <= 5 // Días laborables (lunes a viernes)
+          }
+        })
+
+        return projectsByDayType.length
+      },
+
       checkAndUnlockAchievements: () => {
         const state = get()
         const totalProjects = state.getTotalCompletedProjects()
@@ -1802,8 +2386,6 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
           // Verificar requisitos de bases de datos
           if (achievement.requiredDatabases) {
             const dbCounts = achievement.requiredDatabases.map((db) => {
-              // Aquí necesitaríamos implementar una función para contar proyectos por base de datos
-              // Por ahora, asumimos que existe una función similar a getCompletedProjectsByFramework
               return state.getCompletedProjectsByDatabase(db) || 0
             })
 
@@ -1821,7 +2403,6 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
           // Verificar requisitos de tipos de aplicaciones
           if (achievement.requiredAppTypes) {
             const appTypeCounts = achievement.requiredAppTypes.map((type) => {
-              // Aquí necesitaríamos implementar una función para contar proyectos por tipo
               return state.getCompletedProjectsByAppType(type) || 0
             })
 
@@ -1836,148 +2417,51 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
             }
           }
 
-          // Verificar logro de frameworks
-          if (achievement.id === "framework-master") {
-            const uniqueFrameworks = new Set<string>()
-            state.completedProjects.forEach((project) => {
-              project.frameworks.forEach((framework) => {
-                uniqueFrameworks.add(framework)
-              })
-            })
-            shouldUnlock = uniqueFrameworks.size >= 5
-          }
+          // Verificar requisitos de consistencia
+          if (achievement.requiredConsistency) {
+            const { type, count, period, dayType, timeRange } = achievement.requiredConsistency
 
-          // Verificar logro de políglota
-          if (achievement.id === "polyglot") {
-            const uniqueLanguages = new Set<string>()
-            state.completedProjects.forEach((project) => {
-              project.technologies.forEach((tech) => {
-                uniqueLanguages.add(tech)
-              })
-            })
-            shouldUnlock = uniqueLanguages.size >= 6
-          }
-
-          // Verificar logro de coleccionista de lenguajes
-          if (achievement.id === "language-collector") {
-            const uniqueLanguages = new Set<string>()
-            state.completedProjects.forEach((project) => {
-              project.technologies.forEach((tech) => {
-                uniqueLanguages.add(tech)
-              })
-            })
-            shouldUnlock = uniqueLanguages.size >= 10
-          }
-
-          // Verificar logro de coleccionista de frameworks
-          if (achievement.id === "framework-collector") {
-            const uniqueFrameworks = new Set<string>()
-            state.completedProjects.forEach((project) => {
-              project.frameworks.forEach((framework) => {
-                uniqueFrameworks.add(framework)
-              })
-            })
-            shouldUnlock = uniqueFrameworks.size >= 10
-          }
-
-          // Verificar logro de coleccionista de bases de datos
-          if (achievement.id === "database-collector") {
-            const uniqueDatabases = new Set<string>()
-            state.completedProjects.forEach((project) => {
-              project.databases.forEach((db) => {
-                uniqueDatabases.add(db)
-              })
-            })
-            shouldUnlock = uniqueDatabases.size >= 5
-          }
-
-          // Verificar logros por nivel específico
-          if (achievement.requiredLevelProjects) {
-            const { level, count } = achievement.requiredLevelProjects
-            const levelProjects = state.getCompletedProjectsByLevel(level)
-            shouldUnlock = levelProjects >= count
-          }
-
-          // Verificar logros por stack específico
-          if (achievement.requiredStack) {
-            // Implementación simplificada - en una implementación real
-            // necesitaríamos verificar que los proyectos usen todas las tecnologías del stack
-            const stackCounts = achievement.requiredStack.map((tech) => {
-              // Combinamos tecnologías, frameworks y bases de datos
-              const techCount = state.getCompletedProjectsByLanguage(tech) || 0
-              const frameworkCount = state.getCompletedProjectsByFramework(tech) || 0
-              const dbCount = state.getCompletedProjectsByDatabase(tech) || 0
-              return techCount + frameworkCount + dbCount
-            })
-            shouldUnlock =
-              stackCounts.every((count) => count >= 1) &&
-              state.completedProjects.filter((p) =>
-                achievement.requiredStack?.some(
-                  (tech) => p.technologies.includes(tech) || p.frameworks.includes(tech) || p.databases.includes(tech),
-                ),
-              ).length >= 5
-          }
-
-          // Verificar logros por tags específicos
-          if (achievement.requiredTags) {
-            // Esta es una implementación simplificada
-            // En una implementación real, necesitaríamos tener tags en los proyectos
-            const taggedProjects = state.completedProjects.filter((p) =>
-              achievement.requiredTags?.some(
-                (tag) =>
-                  p.technologies.some((tech) => tech.toLowerCase().includes(tag)) ||
-                  p.frameworks.some((framework) => framework.toLowerCase().includes(tag)) ||
-                  p.title.toLowerCase().includes(tag),
-              ),
-            )
-            shouldUnlock = taggedProjects.length >= (achievement.id.includes("pioneer") ? 3 : 5)
-          }
-
-          // Verificar logros por combinaciones específicas
-          if (achievement.requiredCombination) {
-            const { languages, frameworks, databases, count, frameworks2 } = achievement.requiredCombination
-
-            // Contar proyectos que usan esta combinación específica
-            let combinationProjects = 0
-
-            state.completedProjects.forEach((project) => {
-              let matchesLanguages = true
-              let matchesFrameworks = true
-              let matchesFrameworks2 = true
-              let matchesDatabases = true
-
-              // Verificar lenguajes requeridos
-              if (languages && languages.length > 0) {
-                matchesLanguages = languages.every((lang) => project.technologies.some((tech) => tech.includes(lang)))
-              }
-
-              // Verificar frameworks requeridos
-              if (frameworks && frameworks.length > 0) {
-                matchesFrameworks = frameworks.every((framework) =>
-                  project.frameworks.some((f) => f.includes(framework)),
-                )
-              }
-
-              // Verificar frameworks secundarios requeridos (si existen)
-              if (frameworks2 && frameworks2.length > 0) {
-                matchesFrameworks2 = frameworks2.every((framework) =>
-                  project.frameworks.some((f) => f.includes(framework)),
-                )
-              }
-
-              // Verificar bases de datos requeridas
-              if (databases && databases.length > 0) {
-                matchesDatabases = databases.every((db) => project.databases.some((d) => d.includes(db)))
-              }
-
-              // Si el proyecto cumple con todos los requisitos, incrementar el contador
-              if (matchesLanguages && matchesFrameworks && matchesFrameworks2 && matchesDatabases) {
-                combinationProjects++
-              }
-            })
-
-            // Desbloquear el logro si se alcanza el número requerido de proyectos
-            shouldUnlock = combinationProjects >= count
+            switch (type) {
+              case "streak":
+                // Verificar racha de días consecutivos
+                shouldUnlock = state.getConsecutiveDaysStreak() >= count
+                break
+              case "weekly":
+                // Verificar completados por semana durante un período
+                shouldUnlock = state.getWeeklyCompletionCount(period || 1) >= count
+                break
+              case "monthly":
+                // Verificar completados por mes durante un período
+                shouldUnlock = state.getMonthlyCompletionCount(period || 1) >= count
+                break
+              case "sameDay":
+                // Verificar proyectos completados en un mismo día
+                shouldUnlock = state.getProjectsCompletedSameDay() >= count
+                break
+              case "timeOfDay":
+                // Verificar proyectos completados en un horario específico
+                if (timeRange) {
+                  shouldUnlock = state.getProjectsByTimeOfDay(timeRange) >= count
+                }
+                break
+              case "dayOfWeek":
+                // Verificar proyectos completados en días específicos
+                if (dayType) {
+                  shouldUnlock = state.getProjectsByDayType(dayType) >= count
+                }
+                break
+              case "daily":
+                // Verificar proyectos completados todos los días de la semana
+                // Implementación simplificada: verificar si hay al menos 'count' días diferentes
+                const uniqueDays = new Set<string>()
+                state.completedProjects.forEach((project) => {
+                  const date = new Date(project.completedAt)
+                  const dayOfWeek = date.getDay() // 0-6
+                  uniqueDays.add(dayOfWeek.toString())
+                })
+                shouldUnlock = uniqueDays.size >= count
+                break
+            }
           }
 
           // Desbloquear el logro si se cumplen las condiciones
@@ -1986,13 +2470,12 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
           }
         })
       },
+
       getCompletedProjectsByDatabase: (database: string) => {
         return get().completedProjects.filter((p) => p.databases.includes(database)).length
       },
+
       getCompletedProjectsByAppType: (appType: string) => {
-        // This requires that the projectIdeas data has an appType field
-        // and that the completedProjects objects somehow store this information
-        // For now, return 0
         return get().completedProjects.filter(
           (p) =>
             p.title.toLowerCase().includes(appType.toLowerCase()) ||
@@ -2010,3 +2493,10 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
     },
   ),
 )
+
+// Función auxiliar para obtener el número de semana del año
+function getWeekNumber(date: Date): number {
+  const firstDayOfYear = new Date(date.getFullYear(), 0, 1)
+  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
+}
