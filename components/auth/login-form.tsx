@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth/auth-provider"
@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
 import { Github } from "lucide-react"
 
-export function LoginForm() {
+function LoginFormContent() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -175,5 +175,19 @@ export function LoginForm() {
         </Link>
       </p>
     </div>
+  )
+}
+
+export function LoginForm() {
+  return (
+    <Suspense
+      fallback={
+        <div className="fantasy-card p-6 w-full max-w-md mx-auto">
+          <h2 className="text-2xl font-cinzel font-bold text-white mb-6 text-center">Cargando...</h2>
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   )
 }
