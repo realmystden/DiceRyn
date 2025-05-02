@@ -31,7 +31,14 @@ export default function ModelDice({
   height = 500,
   continuousSpin = false,
   spinSpeed = 1,
-}: ModelDiceProps) {
+}: {
+  isRolling?: boolean
+  setIsRolling?: (isRolling: boolean) => void
+  onRollComplete?: () => void
+  height?: number
+  continuousSpin?: boolean
+  spinSpeed?: number
+}) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {

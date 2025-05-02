@@ -15,9 +15,25 @@ import { additionalProjectIdeas } from "./project-ideas-additional"
 import { gameProjectIdeas } from "./project-ideas-games"
 import { studentProjectIdeas } from "./project-ideas-student"
 
-// Lista ampliada de ideas con más lenguajes de programación
-const baseProjectIdeas: ProjectIdea[] = [
-  // JavaScript - 10 proyectos
+// Combinar todas las ideas de proyectos
+export const projectIdeas = [
+  ...additionalProjectIdeas,
+  ...gameProjectIdeas,
+  ...studentProjectIdeas,
+  // Ideas originales
+  {
+    id: "1",
+    nombre: "Sistema de Gestión de Inventario",
+    descripcion:
+      "Desarrolla un sistema para gestionar el inventario de una tienda, con funcionalidades para añadir, editar y eliminar productos, así como para realizar un seguimiento de las existencias.",
+    nivel: "Junior",
+    tipo: "Web",
+    tecnologias: ["JavaScript", "React", "Node.js"],
+    frameworks: ["Express"],
+    baseDatos: ["MongoDB"],
+    caracteristicas: ["CRUD", "Autenticación", "Reportes"],
+    complejidad: 3,
+  },
   {
     titulo: "Planificador de Viajes Interactivo",
     descripcion:
@@ -785,12 +801,4 @@ const baseProjectIdeas: ProjectIdea[] = [
     nivel: "Trainee",
     tipo: "Aplicación Web",
   },
-]
-
-// Combinar las ideas base con las ideas adicionales, de videojuegos y de estudiantes
-export const projectIdeas: ProjectIdea[] = [
-  ...baseProjectIdeas,
-  ...additionalProjectIdeas,
-  ...gameProjectIdeas,
-  ...studentProjectIdeas,
 ]

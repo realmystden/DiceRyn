@@ -10,10 +10,10 @@ import { projectIdeas } from "@/lib/project-ideas"
 
 export function LanguageFilter() {
   const [open, setOpen] = useState(false)
-  const { languageFilter, setLanguageFilter, appTypeFilter } = useProjectIdeasStore()
+  const { languageFilter, setLanguageFilter, appTypeFilter, easterEggActivated } = useProjectIdeasStore()
   const [languages, setLanguages] = useState<string[]>([])
 
-  // Modificar la función useEffect para asegurar que se extraigan todos los lenguajes de programación
+  // Extraer todos los lenguajes de programación
   useEffect(() => {
     let filteredIdeas = [...projectIdeas]
 
@@ -26,9 +26,15 @@ export function LanguageFilter() {
     const allLanguages = filteredIdeas.flatMap((idea) => idea.tecnologias)
 
     // Eliminar duplicados y ordenar
-    const uniqueLanguages = Array.from(new Set(allLanguages))
+    let uniqueLanguages = Array.from(new Set(allLanguages))
+
+    // Filtrar Brainfuck a menos que el easter egg esté activado
+    if (!easterEggActivated) {
+      uniqueLanguages = uniqueLanguages.filter((lang) => lang !== "Brainfuck")
+    }
+
     setLanguages(uniqueLanguages.sort())
-  }, [appTypeFilter])
+  }, [appTypeFilter, easterEggActivated])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,10 +72,10 @@ export function LanguageFilter() {
                     setLanguageFilter(language)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className={`cursor-pointer font-fondamento ${language === "Brainfuck" ? "text-purple-500 font-bold" : ""}`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${languageFilter === language ? "opacity-100" : "opacity-0"}`} />
-                  {language}
+                  {language === "Brainfuck" ? `${language} 🧠` : language}
                 </CommandItem>
               ))}
             </CommandGroup>

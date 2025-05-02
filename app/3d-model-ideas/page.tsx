@@ -151,7 +151,14 @@ export default function ModelIdeas() {
       <div className="w-full max-w-5xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           {/* Área del dado */}
-          <div className="w-full md:w-1/2 h-[500px] relative">
+          <div className="w-full md:w-1/2 h-[500px] relative cursor-pointer" onClick={generateIdea}>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              {!isGenerating && !idea && (
+                <div className="bg-green-900/70 px-4 py-2 rounded-lg backdrop-blur-sm">
+                  <p className="text-white font-fondamento text-center">Haz clic en el dado para generar una idea</p>
+                </div>
+              )}
+            </div>
             <ModelDice isRolling={isRolling} />
           </div>
 

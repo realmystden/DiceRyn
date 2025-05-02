@@ -110,9 +110,9 @@ export default function TechProjects() {
   const [showRoadmap, setShowRoadmap] = useState(false)
   const [isRolling, setIsRolling] = useState(false)
   const [noResults, setNoResults] = useState(false)
+  const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null)
 
   const {
-    setSelectedIdea,
     appTypeFilter,
     languageFilter,
     frameworkFilter,
@@ -198,7 +198,8 @@ export default function TechProjects() {
     const randomIndex = Math.floor(Math.random() * filteredIdeas.length)
     const selectedIdeaIndex = projectIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
 
-    setSelectedIdea(selectedIdeaIndex + 1)
+    // Usar el estado local en lugar del store
+    setSelectedIdeaIndex(selectedIdeaIndex + 1)
   }
 
   const resetFilters = () => {
@@ -245,7 +246,11 @@ export default function TechProjects() {
 
       {/* Mensaje de no resultados o componente de ideas de proyecto */}
       <AnimatedSection delay={0.3}>
-        {noResults ? <NoResultsMessage onReset={resetFilters} /> : <ProjectIdeas />}
+        {noResults ? (
+          <NoResultsMessage onReset={resetFilters} />
+        ) : (
+          <ProjectIdeas selectedIdeaOverride={selectedIdeaIndex} />
+        )}
       </AnimatedSection>
 
       {/* Botón para mostrar/ocultar roadmap */}

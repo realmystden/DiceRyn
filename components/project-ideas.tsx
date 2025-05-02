@@ -2,108 +2,38 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { projectIdeas } from "@/lib/project-ideas"
 import { useProjectIdeasStore } from "@/lib/store"
+import { projectIdeas } from "@/lib/project-ideas"
 import { Button } from "@/components/ui/button"
-import { NoResultsMessage } from "@/components/no-results-message"
 
-export function ProjectIdeas() {
+interface ProjectIdeasProps {
+  selectedIdeaOverride?: number | null
+}
+
+export function ProjectIdeas({ selectedIdeaOverride }: ProjectIdeasProps) {
+  const [mounted, setMounted] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+
   const {
-    selectedIdea,
+    selectedIdea: storeSelectedIdea,
     setSelectedIdea,
     appTypeFilter,
     languageFilter,
     frameworkFilter,
     databaseFilter,
     nivelFilter,
-    categoryFilter,
-    sortOption,
-    resetFilters,
+    markProjectAsCompleted,
+    isProjectCompleted,
   } = useProjectIdeasStore()
 
-  const [isVisible, setIsVisible] = useState(false)
-  const [filteredIdeas, setFilteredIdeas] = useState(projectIdeas)
-  const [noResults, setNoResults] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  // Usar el override si está disponible, de lo contrario usar el valor del store
+  const selectedIdea = selectedIdeaOverride !== undefined ? selectedIdeaOverride : storeSelectedIdea
 
-  // Marcar cuando el componente está montado
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // Filtrar y ordenar ideas según los criterios seleccionados
-  useEffect(() => {
-    if (!mounted) return
-
-    try {
-      let result = [...projectIdeas]
-
-      // Filtrar por categoría
-      if (categoryFilter) {
-        result = result.filter((idea) => idea.categoria === categoryFilter)
-      }
-
-      // Filtrar por tipo de aplicación
-      if (appTypeFilter) {
-        result = result.filter((idea) => idea.tipo === appTypeFilter)
-      }
-
-      // Filtrar por lenguaje de programación
-      if (languageFilter) {
-        result = result.filter((idea) => idea.tecnologias.includes(languageFilter))
-      }
-
-      // Filtrar por framework
-      if (frameworkFilter) {
-        result = result.filter((idea) => idea.frameworks.includes(frameworkFilter))
-      }
-
-      // Filtrar por base de datos
-      if (databaseFilter) {
-        result = result.filter((idea) => idea.basesdedatos.includes(databaseFilter))
-      }
-
-      // Filtrar por nivel
-      if (nivelFilter) {
-        result = result.filter((idea) => idea.nivel === nivelFilter)
-      }
-
-      // Verificar si hay resultados después de aplicar los filtros
-      if (result.length === 0) {
-        setNoResults(true)
-      } else {
-        setNoResults(false)
-      }
-
-      // Ordenar según la opción seleccionada
-      if (sortOption === "category") {
-        result.sort((a, b) => a.categoria.localeCompare(b.categoria))
-      } else if (sortOption === "language") {
-        result.sort((a, b) => a.tecnologias[0].localeCompare(b.tecnologias[0]))
-      } else if (sortOption === "framework") {
-        result.sort((a, b) => {
-          const frameworkA = a.frameworks.length > 0 ? a.frameworks[0] : ""
-          const frameworkB = b.frameworks.length > 0 ? b.frameworks[0] : ""
-          return frameworkA.localeCompare(frameworkB)
-        })
-      } else if (sortOption === "database") {
-        result.sort((a, b) => {
-          const databaseA = a.basesdedatos.length > 0 ? a.basesdedatos[0] : ""
-          const databaseB = b.basesdedatos.length > 0 ? b.basesdedatos[0] : ""
-          return databaseA.localeCompare(databaseB)
-        })
-      } else if (sortOption === "nivel") {
-        const nivelOrder = { Student: 0, Trainee: 1, Junior: 2, Senior: 3 }
-        result.sort((a, b) => nivelOrder[a.nivel] - nivelOrder[b.nivel])
-      }
-
-      setFilteredIdeas(result)
-    } catch (error) {
-      console.error("Error al filtrar ideas:", error)
-      setFilteredIdeas(projectIdeas)
-    }
-  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, categoryFilter, sortOption, mounted])
-
+  // Cuando cambia la idea seleccionada, hacerla visible
   useEffect(() => {
     if (selectedIdea !== null) {
       setIsVisible(true)
@@ -112,27 +42,25 @@ export function ProjectIdeas() {
 
   const handleReset = () => {
     setIsVisible(false)
-    setTimeout(() => setSelectedIdea(null), 300)
+    setTimeout(() => {
+      if (selectedIdeaOverride !== undefined) {
+        // Si estamos usando un override, notificar al componente padre
+        // Este es un placeholder - el componente padre debe manejar esto
+      } else {
+        // Si estamos usando el store, resetear el store
+        setSelectedIdea(null)
+      }
+    }, 300)
   }
 
-  const handleResetFilters = () => {
-    resetFilters()
-    setNoResults(false)
+  const handleMarkAsCompleted = (id: number) => {
+    markProjectAsCompleted(id)
   }
 
-  if (!mounted) {
-    return null
-  }
+  if (!mounted) return null
 
-  // Si hay filtros activos pero no hay resultados, mostrar mensaje de error
-  if (
-    noResults &&
-    (appTypeFilter || languageFilter || frameworkFilter || databaseFilter || nivelFilter || categoryFilter)
-  ) {
-    return <NoResultsMessage onReset={handleResetFilters} />
-  }
-
-  if (selectedIdea === null || !projectIdeas || projectIdeas.length === 0) {
+  // Si no hay idea seleccionada, no mostrar nada
+  if (selectedIdea === null) {
     return null
   }
 
@@ -150,7 +78,11 @@ export function ProjectIdeas() {
           basesdedatos: [],
           nivel: "Trainee" as const,
           tipo: "Aplicación Web" as const,
+          caracteristicas: ["No disponible"],
         }
+
+  // Verificar si el proyecto está completado
+  const completed = isProjectCompleted(selectedIdea)
 
   // Función para determinar si una tecnología debe resaltarse
   const shouldHighlightTech = (tech: string) => {
@@ -226,7 +158,7 @@ export function ProjectIdeas() {
             <h2 className="text-2xl font-cinzel font-bold text-white">Idea #{selectedIdea}</h2>
             <div className="flex gap-2">
               <span className="bg-purple-600/70 text-white px-3 py-1 rounded-full text-sm font-fondamento">
-                {idea.categoria}
+                {idea.categoria || "General"}
               </span>
               <span
                 className={`${
@@ -266,7 +198,7 @@ export function ProjectIdeas() {
             </div>
           </div>
 
-          {idea.frameworks.length > 0 && (
+          {idea.frameworks && idea.frameworks.length > 0 && (
             <div className="mb-4">
               <h4 className="text-sm font-cinzel mb-2 text-white">Frameworks:</h4>
               <div className="flex flex-wrap gap-2 mb-4">
@@ -286,7 +218,7 @@ export function ProjectIdeas() {
             </div>
           )}
 
-          {idea.basesdedatos.length > 0 && (
+          {idea.basesdedatos && idea.basesdedatos.length > 0 && (
             <div className="mb-4">
               <h4 className="text-sm font-cinzel mb-2 text-white">Bases de Datos:</h4>
               <div className="flex flex-wrap gap-2 mb-4">
@@ -306,7 +238,20 @@ export function ProjectIdeas() {
             </div>
           )}
 
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            <Button
+              onClick={() => handleMarkAsCompleted(selectedIdea)}
+              variant="outline"
+              className={`fantasy-button ${
+                completed
+                  ? "bg-green-700/50 border-green-500 hover:bg-green-700"
+                  : "border-purple-600 hover:bg-purple-700"
+              } text-white`}
+              disabled={completed}
+            >
+              <span className="font-fondamento">{completed ? "✓ Completado" : "Marcar como completado"}</span>
+            </Button>
+
             <Button
               onClick={handleReset}
               variant="outline"
