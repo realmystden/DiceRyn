@@ -5,16 +5,16 @@ import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Environment } from "@react-three/drei"
 import { BaseDice } from "./base-dice"
 
-// Resultados posibles para el dado de anime
-const animeResults = [
-  "Un personaje de anime en pose heroica",
-  "Una escena de batalla épica",
-  "Un momento emotivo entre personajes",
-  "Un paisaje de fantasía con estilo anime",
-  "Un personaje con transformación dramática",
-  "Una escena cotidiana con estilo slice of life",
-  "Un villano carismático en pose amenazante",
-  "Una escena de comedia con expresiones exageradas",
+// Resultados posibles para el dado de dibujos anime
+const animeDrawingResults = [
+  "Un personaje en pose dinámica",
+  "Un retrato con expresión emotiva",
+  "Una escena de acción con efectos",
+  "Un paisaje de fantasía estilo anime",
+  "Un diseño de personaje original",
+  "Una escena cotidiana estilizada",
+  "Un grupo de personajes interactuando",
+  "Una transformación o poder especial",
 ]
 
 interface AnimeDiceProps {
@@ -64,7 +64,7 @@ export default function AnimeDice({
           isRolling={isRolling}
           setIsRolling={setIsRolling}
           onRollComplete={onRollComplete}
-          results={animeResults}
+          results={animeDrawingResults}
           continuousSpin={continuousSpin}
           spinSpeed={spinSpeed}
         />

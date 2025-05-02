@@ -2,6 +2,8 @@ import type React from "react"
 import "./globals.css"
 import type { Metadata } from "next"
 import { Cinzel, Fondamento } from "next/font/google"
+import { Navigation } from "@/components/navigation"
+import { PageTransition } from "@/components/page-transition"
 
 // Fuentes de fantasía
 const cinzel = Cinzel({
@@ -36,7 +38,10 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" />
       </head>
-      <body className={`${cinzel.variable} ${fondamento.variable} bg-[#121214] text-white`}>{children}</body>
+      <body className={`${cinzel.variable} ${fondamento.variable} bg-[#121214] text-white`}>
+        <Navigation />
+        <PageTransition>{children}</PageTransition>
+      </body>
     </html>
   )
 }

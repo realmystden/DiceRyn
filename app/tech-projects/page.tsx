@@ -14,6 +14,7 @@ import { SortOptions } from "@/components/sort-options"
 import { NoResultsMessage } from "@/components/no-results-message"
 import { useProjectIdeasStore } from "@/lib/store"
 import { projectIdeas } from "@/lib/project-ideas"
+import { AnimatedSection } from "@/components/animated-section"
 
 // Importar TechDice de forma dinámica para evitar problemas de SSR
 const TechDice = dynamic(() => import("@/components/tech-dice"), {
@@ -222,7 +223,7 @@ export default function TechProjects() {
       description="Obtén ideas aleatorias para tu próximo proyecto de tecnología con un lanzamiento de dado."
     >
       {/* Filtros y controles */}
-      <div className="w-full fantasy-card p-4 mb-8">
+      <AnimatedSection className="w-full fantasy-card p-4 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
           <h2 className="text-xl font-cinzel text-white">Filtros y Opciones</h2>
         </div>
@@ -235,34 +236,38 @@ export default function TechProjects() {
           <NivelFilter />
           <SortOptions />
         </div>
-      </div>
+      </AnimatedSection>
 
       {/* Escena 3D del dado */}
-      <div className="w-full h-[500px] relative fantasy-card p-4 mb-8">
+      <AnimatedSection className="w-full h-[500px] relative fantasy-card p-4 mb-8" delay={0.2}>
         <TechDice isRolling={isRolling} setIsRolling={setIsRolling} onRollComplete={handleRollComplete} />
-      </div>
+      </AnimatedSection>
 
       {/* Mensaje de no resultados o componente de ideas de proyecto */}
-      {noResults ? <NoResultsMessage onReset={resetFilters} /> : <ProjectIdeas />}
+      <AnimatedSection delay={0.3}>
+        {noResults ? <NoResultsMessage onReset={resetFilters} /> : <ProjectIdeas />}
+      </AnimatedSection>
 
       {/* Botón para mostrar/ocultar roadmap */}
-      <div className="w-full text-center mt-12 mb-6">
+      <AnimatedSection className="w-full text-center mt-12 mb-6" delay={0.4}>
         <button
           onClick={() => setShowRoadmap(!showRoadmap)}
           className="px-6 py-3 bg-purple-700 hover:bg-purple-600 rounded-md font-fondamento transition-all"
         >
           {showRoadmap ? "Ocultar Roadmap" : "Ver Roadmap de Aprendizaje"}
         </button>
-      </div>
+      </AnimatedSection>
 
       {/* Roadmap */}
       {showRoadmap && (
-        <Roadmap
-          title="Roadmap de Desarrollo en Tecnología"
-          description="Guía paso a paso para convertirte en un experto en desarrollo de software"
-          steps={techRoadmapSteps}
-          accentColor="purple"
-        />
+        <AnimatedSection delay={0.1}>
+          <Roadmap
+            title="Roadmap de Desarrollo en Tecnología"
+            description="Guía paso a paso para convertirte en un experto en desarrollo de software"
+            steps={techRoadmapSteps}
+            accentColor="purple"
+          />
+        </AnimatedSection>
       )}
     </PageLayout>
   )

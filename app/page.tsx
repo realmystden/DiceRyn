@@ -4,9 +4,10 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Navigation } from "@/components/navigation"
 import { Dice1Icon as Dice, BookOpen, PenTool, CuboidIcon as Cube } from "lucide-react"
 import dynamic from "next/dynamic"
+import { AnimatedSection } from "@/components/animated-section"
+import { StaggeredList } from "@/components/staggered-list"
 
 // Importar los dados de forma dinámica para evitar problemas de SSR
 const TechDice = dynamic(() => import("@/components/tech-dice"), {
@@ -88,125 +89,111 @@ export default function Home() {
   }
 
   return (
-    <>
-      <Navigation />
-      <main className="min-h-screen bg-[#121214] text-white">
-        {/* Hero Section */}
-        <section className="relative py-20 overflow-hidden">
-          <div className="absolute inset-0 z-0 opacity-20">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
-            <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-radial from-blue-600/20 via-transparent to-transparent"></div>
-          </div>
+    <main className="min-h-screen bg-[#121214] text-white">
+      {/* Hero Section */}
+      <AnimatedSection className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-radial from-purple-600/20 via-transparent to-transparent"></div>
+          <div className="absolute bottom-0 right-0 w-full h-full bg-gradient-radial from-blue-600/20 via-transparent to-transparent"></div>
+        </div>
 
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="text-center md:text-left md:w-1/2">
-                <motion.h1
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-5xl md:text-7xl font-cinzel font-bold mb-4"
-                >
-                  DiceRyn
-                </motion.h1>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-xl md:text-2xl font-fondamento mb-8 opacity-90"
-                >
-                  Generador de ideas creativas para tus proyectos de tecnología, historias, arte y modelado 3D.
-                </motion.p>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                >
-                  <Link
-                    href="/tech-projects"
-                    className="px-8 py-3 bg-purple-700 hover:bg-purple-600 rounded-md font-fondamento text-lg transition-all inline-block"
-                  >
-                    Comenzar
-                  </Link>
-                </motion.div>
-              </div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 0.7, delay: 0.3 }}
-                className="md:w-1/2 flex justify-center"
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="text-center md:text-left md:w-1/2">
+              <motion.h1
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-5xl md:text-7xl font-cinzel font-bold mb-4"
               >
-                <Image
-                  src="/diceryn-new.png"
-                  alt="DiceRyn Logo"
-                  width={300}
-                  height={300}
-                  className="rounded-lg shadow-2xl shadow-purple-500/20"
-                  priority
-                />
+                DiceRyn
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-xl md:text-2xl font-fondamento mb-8 opacity-90"
+              >
+                Generador de ideas creativas para tus proyectos de tecnología, historias, arte y modelado 3D.
+              </motion.p>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <Link
+                  href="/tech-projects"
+                  className="px-8 py-3 bg-purple-700 hover:bg-purple-600 rounded-md font-fondamento text-lg transition-all inline-block"
+                >
+                  Comenzar
+                </Link>
               </motion.div>
             </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
+              className="md:w-1/2 flex justify-center"
+            >
+              <Image
+                src="/diceryn-new.png"
+                alt="DiceRyn Logo"
+                width={300}
+                height={300}
+                className="rounded-lg shadow-2xl shadow-purple-500/20"
+                priority
+              />
+            </motion.div>
           </div>
-        </section>
+        </div>
+      </AnimatedSection>
 
-        {/* Sections Grid */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-cinzel font-bold text-center mb-12">Explora Nuestras Secciones</h2>
+      {/* Sections Grid */}
+      <AnimatedSection className="py-16 px-4" delay={0.3}>
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-cinzel font-bold text-center mb-12">Explora Nuestras Secciones</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {sections.map((section, index) => (
-                <motion.div
-                  key={section.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+          <StaggeredList className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {sections.map((section, index) => (
+              <Link key={section.title} href={section.href}>
+                <div
+                  className={`h-full p-6 rounded-lg border ${section.borderColor} bg-gradient-to-br ${section.color} transition-all ${section.hoverColor} flex flex-col`}
                 >
-                  <Link href={section.href}>
-                    <div
-                      className={`h-full p-6 rounded-lg border ${section.borderColor} bg-gradient-to-br ${section.color} transition-all ${section.hoverColor} flex flex-col`}
-                    >
-                      <div className="flex flex-col items-center text-center mb-4">
-                        <div className="h-40 w-40 mb-4">
-                          {section.diceComponent && (
-                            <section.diceComponent height={160} continuousSpin spinSpeed={0.5} />
-                          )}
-                        </div>
-                        <h3 className="text-2xl font-cinzel font-bold mb-2">{section.title}</h3>
-                      </div>
-                      <p className="font-fondamento text-center mb-6 flex-grow">{section.description}</p>
-                      <div className="text-center mt-auto">
-                        <span
-                          className={`px-4 py-2 rounded-md border ${section.borderColor} font-fondamento inline-block`}
-                        >
-                          Explorar
-                        </span>
-                      </div>
+                  <div className="flex flex-col items-center text-center mb-4">
+                    <div className="h-40 w-40 mb-4">
+                      {section.diceComponent && <section.diceComponent height={160} continuousSpin spinSpeed={0.5} />}
                     </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
+                    <h3 className="text-2xl font-cinzel font-bold mb-2">{section.title}</h3>
+                  </div>
+                  <p className="font-fondamento text-center mb-6 flex-grow">{section.description}</p>
+                  <div className="text-center mt-auto">
+                    <span className={`px-4 py-2 rounded-md border ${section.borderColor} font-fondamento inline-block`}>
+                      Explorar
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </StaggeredList>
+        </div>
+      </AnimatedSection>
 
-        {/* About Section */}
-        <section className="py-16 px-4 bg-gray-900/50">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-cinzel font-bold mb-6">Sobre DiceRyn</h2>
-            <p className="text-lg font-fondamento mb-8">
-              DiceRyn es una plataforma diseñada para inspirar tu creatividad cuando te enfrentas al bloqueo creativo.
-              Ya sea que estés buscando ideas para tu próximo proyecto de programación, una historia cautivadora, un
-              dibujo de anime impresionante o un modelo 3D único, DiceRyn está aquí para ayudarte.
-            </p>
-            <p className="text-lg font-fondamento">
-              Cada sección incluye un generador de ideas aleatorias y un roadmap detallado para ayudarte a mejorar tus
-              habilidades, desde principiante hasta experto.
-            </p>
-          </div>
-        </section>
-      </main>
-    </>
+      {/* About Section */}
+      <AnimatedSection className="py-16 px-4 bg-gray-900/50" delay={0.5}>
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-cinzel font-bold mb-6">Sobre DiceRyn</h2>
+          <p className="text-lg font-fondamento mb-8">
+            DiceRyn es una plataforma diseñada para inspirar tu creatividad cuando te enfrentas al bloqueo creativo. Ya
+            sea que estés buscando ideas para tu próximo proyecto de programación, una historia cautivadora, un dibujo
+            de anime impresionante o un modelo 3D único, DiceRyn está aquí para ayudarte.
+          </p>
+          <p className="text-lg font-fondamento">
+            Cada sección incluye un generador de ideas aleatorias y un roadmap detallado para ayudarte a mejorar tus
+            habilidades, desde principiante hasta experto.
+          </p>
+        </div>
+      </AnimatedSection>
+    </main>
   )
 }
