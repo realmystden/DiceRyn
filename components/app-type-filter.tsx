@@ -26,24 +26,24 @@ export function AppTypeFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button"
+          className="w-full md:w-[200px] justify-between fantasy-button text-white"
         >
           {appTypeFilter ? appTypeFilter : "Todos los tipos"}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full md:w-[200px] p-0 fantasy-card">
-        <Command>
-          <CommandInput placeholder="Buscar tipo..." className="font-fondamento" />
-          <CommandList>
-            <CommandEmpty>No se encontraron tipos.</CommandEmpty>
+        <Command className="bg-gray-900">
+          <CommandInput placeholder="Buscar tipo..." className="font-fondamento text-white" />
+          <CommandList className="bg-gray-900">
+            <CommandEmpty className="text-white">No se encontraron tipos.</CommandEmpty>
             <CommandGroup>
               <CommandItem
                 onSelect={() => {
                   setAppTypeFilter(null)
                   setOpen(false)
                 }}
-                className="cursor-pointer font-fondamento"
+                className="cursor-pointer font-fondamento text-white hover:bg-gray-800"
               >
                 <Check className={`mr-2 h-4 w-4 ${!appTypeFilter ? "opacity-100" : "opacity-0"}`} />
                 Todos los tipos
@@ -55,7 +55,7 @@ export function AppTypeFilter() {
                     setAppTypeFilter(type)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className="cursor-pointer font-fondamento text-white hover:bg-gray-800"
                 >
                   <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type ? "opacity-100" : "opacity-0"}`} />
                   {type}

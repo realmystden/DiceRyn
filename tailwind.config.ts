@@ -56,11 +56,6 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: {
-          light: "#FFD700",
-          DEFAULT: "#D4AF37",
-          dark: "#996515",
-        },
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

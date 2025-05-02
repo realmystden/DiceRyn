@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { projectIdeas } from "@/lib/project-ideas"
 import { useProjectIdeasStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
+import { NoResultsMessage } from "@/components/no-results-message"
 
 export function ProjectIdeas() {
   const {
@@ -15,11 +16,14 @@ export function ProjectIdeas() {
     frameworkFilter,
     databaseFilter,
     nivelFilter,
+    categoryFilter,
     sortOption,
+    resetFilters,
   } = useProjectIdeasStore()
 
   const [isVisible, setIsVisible] = useState(false)
   const [filteredIdeas, setFilteredIdeas] = useState(projectIdeas)
+  const [noResults, setNoResults] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   // Marcar cuando el componente está montado
@@ -33,6 +37,11 @@ export function ProjectIdeas() {
 
     try {
       let result = [...projectIdeas]
+
+      // Filtrar por categoría
+      if (categoryFilter) {
+        result = result.filter((idea) => idea.categoria === categoryFilter)
+      }
 
       // Filtrar por tipo de aplicación
       if (appTypeFilter) {
@@ -57,6 +66,13 @@ export function ProjectIdeas() {
       // Filtrar por nivel
       if (nivelFilter) {
         result = result.filter((idea) => idea.nivel === nivelFilter)
+      }
+
+      // Verificar si hay resultados después de aplicar los filtros
+      if (result.length === 0) {
+        setNoResults(true)
+      } else {
+        setNoResults(false)
       }
 
       // Ordenar según la opción seleccionada
@@ -86,7 +102,7 @@ export function ProjectIdeas() {
       console.error("Error al filtrar ideas:", error)
       setFilteredIdeas(projectIdeas)
     }
-  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, sortOption, mounted])
+  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, categoryFilter, sortOption, mounted])
 
   useEffect(() => {
     if (selectedIdea !== null) {
@@ -99,8 +115,21 @@ export function ProjectIdeas() {
     setTimeout(() => setSelectedIdea(null), 300)
   }
 
+  const handleResetFilters = () => {
+    resetFilters()
+    setNoResults(false)
+  }
+
   if (!mounted) {
     return null
+  }
+
+  // Si hay filtros activos pero no hay resultados, mostrar mensaje de error
+  if (
+    noResults &&
+    (appTypeFilter || languageFilter || frameworkFilter || databaseFilter || nivelFilter || categoryFilter)
+  ) {
+    return <NoResultsMessage onReset={handleResetFilters} />
   }
 
   if (selectedIdea === null || !projectIdeas || projectIdeas.length === 0) {
@@ -166,20 +195,20 @@ export function ProjectIdeas() {
   // Obtener el color de fondo para el nivel
   const getNivelBadgeColor = (nivel: string) => {
     if (shouldHighlightNivel(nivel)) {
-      return "bg-gold-light/70 text-black font-bold"
+      return "bg-gray-300 text-gray-900 font-bold"
     }
 
     switch (nivel) {
       case "Student":
-        return "bg-green-400/70"
+        return "bg-green-400/70 text-white"
       case "Trainee":
-        return "bg-green-600/70"
+        return "bg-green-600/70 text-white"
       case "Junior":
-        return "bg-blue-600/70"
+        return "bg-blue-600/70 text-white"
       case "Senior":
-        return "bg-purple-600/70"
+        return "bg-purple-600/70 text-white"
       default:
-        return "bg-gray-600/70"
+        return "bg-gray-600/70 text-white"
     }
   }
 
@@ -191,19 +220,17 @@ export function ProjectIdeas() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-2xl fantasy-card p-6 text-white shadow-xl"
+          className="w-full max-w-2xl fantasy-card p-6 shadow-xl bg-[#121214] border border-gray-700"
         >
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-cinzel font-bold">Idea #{selectedIdea}</h2>
+            <h2 className="text-2xl font-cinzel font-bold text-white">Idea #{selectedIdea}</h2>
             <div className="flex gap-2">
               <span className="bg-purple-600/70 text-white px-3 py-1 rounded-full text-sm font-fondamento">
                 {idea.categoria}
               </span>
               <span
                 className={`${
-                  shouldHighlightType(idea.tipo)
-                    ? "bg-gold-light/70 text-black font-bold"
-                    : "bg-indigo-600/70 text-white"
+                  shouldHighlightType(idea.tipo) ? "bg-gray-300 text-gray-900 font-bold" : "bg-indigo-600/70 text-white"
                 } px-3 py-1 rounded-full text-sm font-fondamento transition-colors duration-300`}
               >
                 {idea.tipo || "General"}
@@ -218,19 +245,19 @@ export function ProjectIdeas() {
             </div>
           </div>
 
-          <h3 className="text-xl font-cinzel font-semibold mb-2">{idea.titulo}</h3>
-          <p className="text-white/90 mb-4 font-fondamento">{idea.descripcion}</p>
+          <h3 className="text-xl font-cinzel font-semibold mb-2 text-white">{idea.titulo}</h3>
+          <p className="mb-4 font-fondamento text-white">{idea.descripcion}</p>
 
           <div className="mb-4">
-            <h4 className="text-sm font-cinzel mb-2">Tecnologías:</h4>
+            <h4 className="text-sm font-cinzel mb-2 text-white">Tecnologías:</h4>
             <div className="flex flex-wrap gap-2 mb-4">
               {idea.tecnologias.map((tech, index) => (
                 <span
                   key={index}
                   className={`px-2 py-1 rounded text-xs font-fondamento transition-all duration-300 ${
                     shouldHighlightTech(tech)
-                      ? "bg-gold-light text-black font-bold scale-110 shadow-glow"
-                      : "bg-indigo-800/50"
+                      ? "bg-gray-300 text-gray-900 font-bold scale-110"
+                      : "bg-indigo-800/50 text-white"
                   }`}
                 >
                   {tech}
@@ -241,15 +268,15 @@ export function ProjectIdeas() {
 
           {idea.frameworks.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-sm font-cinzel mb-2">Frameworks:</h4>
+              <h4 className="text-sm font-cinzel mb-2 text-white">Frameworks:</h4>
               <div className="flex flex-wrap gap-2 mb-4">
                 {idea.frameworks.map((framework, index) => (
                   <span
                     key={index}
                     className={`px-2 py-1 rounded text-xs font-fondamento transition-all duration-300 ${
                       shouldHighlightFramework(framework)
-                        ? "bg-gold-light text-black font-bold scale-110 shadow-glow"
-                        : "bg-blue-800/50"
+                        ? "bg-gray-300 text-gray-900 font-bold scale-110"
+                        : "bg-blue-800/50 text-white"
                     }`}
                   >
                     {framework}
@@ -261,15 +288,15 @@ export function ProjectIdeas() {
 
           {idea.basesdedatos.length > 0 && (
             <div className="mb-4">
-              <h4 className="text-sm font-cinzel mb-2">Bases de Datos:</h4>
+              <h4 className="text-sm font-cinzel mb-2 text-white">Bases de Datos:</h4>
               <div className="flex flex-wrap gap-2 mb-4">
                 {idea.basesdedatos.map((database, index) => (
                   <span
                     key={index}
                     className={`px-2 py-1 rounded text-xs font-fondamento transition-all duration-300 ${
                       shouldHighlightDatabase(database)
-                        ? "bg-gold-light text-black font-bold scale-110 shadow-glow"
-                        : "bg-green-800/50"
+                        ? "bg-gray-300 text-gray-900 font-bold scale-110"
+                        : "bg-green-800/50 text-white"
                     }`}
                   >
                     {database}
@@ -283,7 +310,7 @@ export function ProjectIdeas() {
             <Button
               onClick={handleReset}
               variant="outline"
-              className="fantasy-button border-gold-light/30 text-white hover:bg-white/20"
+              className="fantasy-button border-gray-600 hover:bg-gray-700 text-white"
             >
               <span className="font-fondamento">Lanzar de nuevo</span>
             </Button>

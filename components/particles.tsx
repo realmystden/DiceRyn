@@ -1,38 +1,52 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useMemo } from "react"
 import { useFrame } from "@react-three/fiber"
 import * as THREE from "three"
 
-export function Particles({ count = 50 }) {
+interface ParticlesProps {
+  count?: number
+  color?: string
+}
+
+export function Particles({ count = 50, color = "#ffffff" }: ParticlesProps) {
   const mesh = useRef<THREE.Points>(null)
-  const positions = useRef<Float32Array>(new Float32Array(count * 3))
-  const velocities = useRef<Float32Array>(new Float32Array(count * 3))
-  const colors = useRef<Float32Array>(new Float32Array(count * 3))
-  const sizes = useRef<Float32Array>(new Float32Array(count))
 
-  // Inicializar partículas
-  for (let i = 0; i < count; i++) {
-    const i3 = i * 3
+  // Usar useMemo para crear las partículas una sola vez
+  const { positions, velocities, colors, sizes } = useMemo(() => {
+    const positions = new Float32Array(count * 3)
+    const velocities = new Float32Array(count * 3)
+    const colors = new Float32Array(count * 3)
+    const sizes = new Float32Array(count)
 
-    // Posiciones iniciales (alrededor del dado)
-    positions.current[i3] = (Math.random() - 0.5) * 4
-    positions.current[i3 + 1] = (Math.random() - 0.5) * 4
-    positions.current[i3 + 2] = (Math.random() - 0.5) * 4
+    // Convertir el color hexadecimal a RGB
+    const colorObj = new THREE.Color(color)
 
-    // Velocidades aleatorias
-    velocities.current[i3] = (Math.random() - 0.5) * 0.2
-    velocities.current[i3 + 1] = (Math.random() - 0.5) * 0.2
-    velocities.current[i3 + 2] = (Math.random() - 0.5) * 0.2
+    // Inicializar partículas
+    for (let i = 0; i < count; i++) {
+      const i3 = i * 3
 
-    // Colores aleatorios (brillantes)
-    colors.current[i3] = Math.random() * 0.5 + 0.5 // R
-    colors.current[i3 + 1] = Math.random() * 0.5 + 0.5 // G
-    colors.current[i3 + 2] = Math.random() * 0.5 + 0.5 // B
+      // Posiciones iniciales (alrededor del dado)
+      positions[i3] = (Math.random() - 0.5) * 4
+      positions[i3 + 1] = (Math.random() - 0.5) * 4
+      positions[i3 + 2] = (Math.random() - 0.5) * 4
 
-    // Tamaños aleatorios
-    sizes.current[i] = Math.random() * 0.5 + 0.1
-  }
+      // Velocidades aleatorias
+      velocities[i3] = (Math.random() - 0.5) * 0.2
+      velocities[i3 + 1] = (Math.random() - 0.5) * 0.2
+      velocities[i3 + 2] = (Math.random() - 0.5) * 0.2
+
+      // Colores basados en el color proporcionado con variación
+      colors[i3] = colorObj.r * (0.8 + Math.random() * 0.4) // R
+      colors[i3 + 1] = colorObj.g * (0.8 + Math.random() * 0.4) // G
+      colors[i3 + 2] = colorObj.b * (0.8 + Math.random() * 0.4) // B
+
+      // Tamaños aleatorios
+      sizes[i] = Math.random() * 0.5 + 0.1
+    }
+
+    return { positions, velocities, colors, sizes }
+  }, [count, color])
 
   useFrame((_, delta) => {
     if (!mesh.current) return
@@ -44,14 +58,28 @@ export function Particles({ count = 50 }) {
     for (let i = 0; i < count; i++) {
       const i3 = i * 3
 
-      positionAttribute.array[i3] += velocities.current[i3] * delta * 10
-      positionAttribute.array[i3 + 1] += velocities.current[i3 + 1] * delta * 10
-      positionAttribute.array[i3 + 2] += velocities.current[i3 + 2] * delta * 10
+      // Actualizar posición
+      positionAttribute.array[i3] += velocities[i3] * delta * 10
+      positionAttribute.array[i3 + 1] += velocities[i3 + 1] * delta * 10
+      positionAttribute.array[i3 + 2] += velocities[i3 + 2] * delta * 10
 
       // Reducir velocidad gradualmente
-      velocities.current[i3] *= 0.99
-      velocities.current[i3 + 1] *= 0.99
-      velocities.current[i3 + 2] *= 0.99
+      velocities[i3] *= 0.99
+      velocities[i3 + 1] *= 0.99
+      velocities[i3 + 2] *= 0.99
+
+      // Reiniciar partículas que se alejan demasiado
+      const distance = Math.sqrt(
+        Math.pow(positionAttribute.array[i3] as number, 2) +
+          Math.pow(positionAttribute.array[i3 + 1] as number, 2) +
+          Math.pow(positionAttribute.array[i3 + 2] as number, 2),
+      )
+
+      if (distance > 5) {
+        positionAttribute.array[i3] = (Math.random() - 0.5) * 4
+        positionAttribute.array[i3 + 1] = (Math.random() - 0.5) * 4
+        positionAttribute.array[i3 + 2] = (Math.random() - 0.5) * 4
+      }
     }
 
     positionAttribute.needsUpdate = true
@@ -60,9 +88,9 @@ export function Particles({ count = 50 }) {
   return (
     <points ref={mesh}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions.current} itemSize={3} />
-        <bufferAttribute attach="attributes-color" count={count} array={colors.current} itemSize={3} />
-        <bufferAttribute attach="attributes-size" count={count} array={sizes.current} itemSize={1} />
+        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
+        <bufferAttribute attach="attributes-size" count={count} array={sizes} itemSize={1} />
       </bufferGeometry>
       <pointsMaterial size={0.5} vertexColors transparent blending={THREE.AdditiveBlending} sizeAttenuation />
     </points>

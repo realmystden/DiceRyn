@@ -4,8 +4,7 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 50, 0, 100;
-  --background-end-rgb: 20, 0, 50;
+  --background-rgb: 18, 18, 20;
 
   /* Fuentes personalizadas */
   --font-heading: var(--font-cinzel), "MedievalSharp", serif;
@@ -19,7 +18,7 @@ html {
 
 body {
   color: rgb(var(--foreground-rgb));
-  transition: background 0.5s ease, color 0.3s ease;
+  background-color: rgb(var(--background-rgb));
   font-family: var(--font-body) !important;
 }
 
@@ -39,74 +38,26 @@ textarea {
   font-family: var(--font-body) !important;
 }
 
-body.light {
-  --foreground-rgb: 20, 20, 20;
-  color: rgb(var(--foreground-rgb));
-}
-
-body.dark {
-  --foreground-rgb: 255, 255, 255;
-  color: rgb(var(--foreground-rgb));
-}
-
 /* Estilos de fantasía para elementos UI */
 .fantasy-card {
-  @apply relative bg-opacity-70 backdrop-blur-md rounded-lg overflow-hidden;
-  border: 2px solid rgba(255, 215, 0, 0.3);
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(255, 215, 0, 0.1);
-}
-
-.fantasy-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent);
-}
-
-.fantasy-card::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.5), transparent);
+  @apply relative bg-gray-900 bg-opacity-70 backdrop-blur-md rounded-lg overflow-hidden shadow-md text-white;
+  border: 2px solid rgba(128, 128, 128, 0.3);
 }
 
 .fantasy-button {
-  @apply relative overflow-hidden transition-all duration-300;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  background: rgba(0, 0, 0, 0.2);
+  @apply relative overflow-hidden transition-all duration-300 bg-gray-800 text-white;
+  border: 1px solid rgba(128, 128, 128, 0.3);
   font-family: var(--font-body) !important;
 }
 
 .fantasy-button:hover {
-  @apply transform scale-105;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-}
-
-.fantasy-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.fantasy-button:hover::before {
-  left: 100%;
+  @apply transform scale-105 bg-gray-700;
+  box-shadow: 0 0 10px rgba(128, 128, 128, 0.4);
 }
 
 .fantasy-select {
-  @apply bg-opacity-70 backdrop-blur-md;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-  box-shadow: 0 0 5px rgba(255, 215, 0, 0.2);
+  @apply bg-gray-800 bg-opacity-70 backdrop-blur-md text-white;
+  border: 1px solid rgba(128, 128, 128, 0.3);
 }
 
 /* Asegurar que las fuentes se mantengan consistentes durante las animaciones */
@@ -136,48 +87,6 @@ canvas,
   font-family: var(--font-heading) !important;
 }
 
-/* Efecto de brillo para elementos resaltados */
-.shadow-glow {
-  box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.6);
-}
-
-/* Estilos para la página de ideas guardadas */
-.saved-ideas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.saved-idea-card {
-  @apply fantasy-card p-4 transition-all duration-300;
-  height: 100%;
-}
-
-.saved-idea-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3), inset 0 0 15px rgba(255, 215, 0, 0.2);
-}
-
-.page-header {
-  @apply flex flex-col md:flex-row justify-between items-center mb-8 pb-4;
-  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.page-title {
-  @apply text-3xl md:text-4xl font-cinzel font-bold;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-}
-
-.nav-link {
-  @apply fantasy-button px-4 py-2 font-fondamento flex items-center gap-2;
-  transition: all 0.3s ease;
-}
-
-.nav-link:hover {
-  @apply transform scale-105;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-}
-
 @layer base {
   :root {
     --background: 240 10% 3.9%;
@@ -186,7 +95,7 @@ canvas,
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 270 100% 60%;
+    --primary: 270 100% 50%;
     --primary-foreground: 0 0% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -199,28 +108,6 @@ canvas,
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 270 100% 60%;
-  }
-
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 270 100% 50%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 270 100% 50%;
   }
 }
 
