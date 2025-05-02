@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut } from "lucide-react"
+import { Menu, X, Dice6, BookOpen, Award, BarChart2, User, LogOut, Settings } from "lucide-react"
 import { useAuth } from "@/lib/auth/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -83,13 +83,13 @@ export function Navigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
+                    <Link href="/profile" className="cursor-pointer flex items-center">
                       <User className="mr-2 h-4 w-4" />
                       <span>Perfil</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile/settings" className="cursor-pointer">
+                    <Link href="/profile/settings" className="cursor-pointer flex items-center">
                       <User className="mr-2 h-4 w-4" />
                       <span>Configuración</span>
                     </Link>
@@ -155,6 +155,14 @@ export function Navigation() {
                 >
                   <User className="w-5 h-5" />
                   <span className="font-fondamento">Perfil</span>
+                </Link>
+                <Link
+                  href="/profile/settings"
+                  className="flex items-center space-x-2 px-4 py-3 rounded-md transition-colors text-gray-300 hover:bg-gray-800 hover:text-white"
+                  onClick={closeMenu}
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="font-fondamento">Configuración</span>
                 </Link>
                 <button
                   onClick={() => {
