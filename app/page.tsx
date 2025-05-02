@@ -132,7 +132,7 @@ export default function Home() {
 
             <div className="md:w-1/2 flex justify-center">
               <Image
-                src="/diceryn-new.png"
+                src="/diceryn-logo.png"
                 alt="DiceRyn Logo"
                 width={300}
                 height={300}

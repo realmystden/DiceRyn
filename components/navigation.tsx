@@ -61,7 +61,7 @@ export function Navigation() {
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0" onClick={closeMenu}>
               <motion.div className="flex items-center" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Image src="/diceryn-new.png" alt="DiceRyn Logo" width={40} height={40} className="mr-2" priority />
+                <Image src="/diceryn-logo.png" alt="DiceRyn Logo" width={40} height={40} className="mr-2" priority />
                 <span className="text-white text-xl font-cinzel">DiceRyn</span>
               </motion.div>
             </Link>
