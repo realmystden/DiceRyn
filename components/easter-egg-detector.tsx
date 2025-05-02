@@ -1,49 +1,92 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useToast } from "@/components/ui/use-toast"
+import { useEffect, useState, useRef } from "react"
+import { useProjectIdeasStore } from "@/lib/store"
 
 export function EasterEggDetector() {
   const [keys, setKeys] = useState<string[]>([])
-  const { toast } = useToast()
+  // Usar useRef para evitar actualizaciones durante el renderizado
+  const setEasterEggActivatedRef = useRef<((activated: boolean) => void) | null>(null)
+
+  // Obtener la función setEasterEggActivated del store
+  const setEasterEggActivated = useProjectIdeasStore((state) => state.setEasterEggActivated)
+
+  // Actualizar la referencia cuando cambie la función
+  useEffect(() => {
+    setEasterEggActivatedRef.current = setEasterEggActivated
+  }, [setEasterEggActivated])
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Add the key to the array
-      setKeys((prevKeys) => {
-        const newKeys = [...prevKeys, e.key.toLowerCase()]
+    // Usar setTimeout para asegurar que la actualización ocurra después del renderizado
+    const timer = setTimeout(() => {
+      // Verificar si el easter egg ya está activado en localStorage
+      const easterEggActivated = localStorage.getItem("diceryn_easter_egg") === "true"
+      if (easterEggActivated && setEasterEggActivatedRef.current) {
+        setEasterEggActivatedRef.current(true)
+      }
+    }, 0)
 
-        // Keep only the last 10 keys
-        if (newKeys.length > 10) {
-          return newKeys.slice(newKeys.length - 10)
+    // Función para detectar combinaciones de teclas
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Añadir la tecla presionada al array
+      setKeys((prev) => {
+        const newKeys = [...prev, e.key].slice(-2)
+
+        // Verificar si se ha ingresado el código "bf"
+        if (newKeys.join("") === "bf" && setEasterEggActivatedRef.current) {
+          // Activar el easter egg
+          localStorage.setItem("diceryn_easter_egg", "true")
+
+          // Usar setTimeout para retrasar la actualización del estado
+          setTimeout(() => {
+            if (setEasterEggActivatedRef.current) {
+              setEasterEggActivatedRef.current(true)
+            }
+          }, 0)
+
+          // Mostrar algún efecto visual o mensaje
+          const easterEggMessage = document.createElement("div")
+          easterEggMessage.textContent = "¡Easter egg activado! 🧠"
+          easterEggMessage.style.position = "fixed"
+          easterEggMessage.style.top = "20px"
+          easterEggMessage.style.left = "50%"
+          easterEggMessage.style.transform = "translateX(-50%)"
+          easterEggMessage.style.background = "purple"
+          easterEggMessage.style.color = "white"
+          easterEggMessage.style.padding = "10px 20px"
+          easterEggMessage.style.borderRadius = "5px"
+          easterEggMessage.style.zIndex = "9999"
+          easterEggMessage.style.opacity = "0"
+          easterEggMessage.style.transition = "opacity 0.3s"
+
+          document.body.appendChild(easterEggMessage)
+
+          // Mostrar y luego ocultar el mensaje
+          setTimeout(() => {
+            easterEggMessage.style.opacity = "1"
+          }, 100)
+          setTimeout(() => {
+            easterEggMessage.style.opacity = "0"
+            setTimeout(() => {
+              document.body.removeChild(easterEggMessage)
+            }, 300)
+          }, 3000)
         }
+
         return newKeys
       })
     }
 
-    window.addEventListener("keydown", handleKeyDown)
+    // Añadir el event listener a nivel de documento
+    document.addEventListener("keydown", handleKeyDown)
 
+    // Limpiar el event listener y el timer
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("keydown", handleKeyDown)
+      clearTimeout(timer)
     }
-  }, [])
+  }, []) // Sin dependencias para evitar re-ejecuciones innecesarias
 
-  useEffect(() => {
-    // Check for "brainfuck" easter egg
-    const brainfuckSequence = ["b", "r", "a", "i", "n", "f", "u", "c", "k"]
-    const lastKeys = keys.slice(-brainfuckSequence.length)
-
-    if (lastKeys.length === brainfuckSequence.length && brainfuckSequence.every((key, i) => key === lastKeys[i])) {
-      toast({
-        title: "¡Easter Egg Encontrado!",
-        description: "Has descubierto el lenguaje de programación esotérico Brainfuck. ¡Felicidades!",
-        variant: "default",
-      })
-
-      // Reset keys to prevent multiple toasts
-      setKeys([])
-    }
-  }, [keys, toast])
-
+  // Este componente no renderiza nada visible
   return null
 }
