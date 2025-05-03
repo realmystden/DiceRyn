@@ -13,11 +13,23 @@ export function NivelFilter() {
 
   // Niveles disponibles con emojis
   const niveles = [
-    { value: "Student", label: "Student", emoji: "🧠", color: "text-green-400" },
-    { value: "Trainee", label: "Trainee", emoji: "🌱", color: "text-blue-400" },
-    { value: "Junior", label: "Junior", emoji: "🚀", color: "text-yellow-400" },
-    { value: "Senior", label: "Senior", emoji: "⭐", color: "text-orange-400" },
-    { value: "Master", label: "Master", emoji: "👑", color: "text-red-400" },
+    {
+      value: "Student",
+      label: "Student",
+      emoji: "🧠",
+      color: "text-green-400",
+      description: "Proyectos para principiantes",
+    },
+    {
+      value: "Trainee",
+      label: "Trainee",
+      emoji: "🌱",
+      color: "text-blue-400",
+      description: "Proyectos para aprendices",
+    },
+    { value: "Junior", label: "Junior", emoji: "🚀", color: "text-yellow-400", description: "Proyectos intermedios" },
+    { value: "Senior", label: "Senior", emoji: "⭐", color: "text-orange-400", description: "Proyectos avanzados" },
+    { value: "Master", label: "Master", emoji: "👑", color: "text-red-400", description: "Proyectos expertos" },
   ]
 
   const getLevelColor = (level: string | null) => {
@@ -86,6 +98,7 @@ export function NivelFilter() {
                   <Check className={`mr-2 h-4 w-4 ${nivelFilter === nivel.value ? "opacity-100" : "opacity-0"}`} />
                   <span className="flex items-center">
                     <span className="mr-2">{nivel.emoji}</span> {nivel.label}
+                    <span className="ml-2 text-xs text-gray-400">({nivel.description})</span>
                   </span>
                 </CommandItem>
               ))}

@@ -57,7 +57,10 @@ export function LanguageFilter() {
     }
 
     // Extraer todos los lenguajes de todas las ideas
-    const allLanguages = filteredIdeas.flatMap((idea) => idea.tecnologias)
+    const allLanguages = filteredIdeas.flatMap((idea) => {
+      // Asegurarse de que idea.tecnologias existe y es un array
+      return Array.isArray(idea.tecnologias) ? idea.tecnologias : []
+    })
 
     // Eliminar duplicados y ordenar
     let uniqueLanguages = Array.from(new Set(allLanguages))
@@ -69,6 +72,14 @@ export function LanguageFilter() {
       // Si el easter egg está activado y Brainfuck no está en la lista, añadirlo
       uniqueLanguages.push("Brainfuck")
     }
+
+    // Add modern languages if they don't exist in the list
+    const modernLanguages = ["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"]
+    modernLanguages.forEach((lang) => {
+      if (!uniqueLanguages.includes(lang)) {
+        uniqueLanguages.push(lang)
+      }
+    })
 
     setLanguages(uniqueLanguages.sort())
   }, [appTypeFilter, easterEggActivated])

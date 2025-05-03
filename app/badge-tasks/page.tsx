@@ -102,6 +102,12 @@ export default function BadgeTasksPage() {
               description: `Utiliza ${remainingCount} lenguaje${remainingCount !== 1 ? "s" : ""} de programación adicional${remainingCount !== 1 ? "es" : ""}`,
               completed: false,
             })
+
+            // Add suggestion for specific languages
+            tasks.push({
+              description: `Sugerencia: Prueba con JavaScript, Python, TypeScript, Java o C#`,
+              completed: false,
+            })
           }
         }
         break
@@ -119,6 +125,12 @@ export default function BadgeTasksPage() {
           if (remainingCount > 0) {
             tasks.push({
               description: `Utiliza ${remainingCount} framework${remainingCount !== 1 ? "s" : ""} adicional${remainingCount !== 1 ? "es" : ""}`,
+              completed: false,
+            })
+
+            // Add suggestion for specific frameworks
+            tasks.push({
+              description: `Sugerencia: Prueba con React, Angular, Vue, Express o Django`,
               completed: false,
             })
           }
@@ -189,6 +201,12 @@ export default function BadgeTasksPage() {
               description: `Mantén una racha de ${remainingDays} día${remainingDays !== 1 ? "s" : ""} más (actual: ${streakDays})`,
               completed: false,
             })
+
+            // Add tip for streaks
+            tasks.push({
+              description: `Consejo: Completa al menos un proyecto cada día para mantener tu racha`,
+              completed: false,
+            })
           }
         }
         break
@@ -200,6 +218,12 @@ export default function BadgeTasksPage() {
           if (remainingDays > 0) {
             tasks.push({
               description: `Mantén una racha de ${remainingDays} día${remainingDays !== 1 ? "s" : ""} más (actual: ${streakDays})`,
+              completed: false,
+            })
+
+            // Add tip for streaks
+            tasks.push({
+              description: `Consejo: Completa al menos un proyecto cada día para mantener tu racha`,
               completed: false,
             })
           }

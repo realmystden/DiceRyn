@@ -56,20 +56,45 @@ export function DatabaseFilter() {
 
     // Aplicar filtro de lenguaje si existe
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
+      })
     }
 
     // Aplicar filtro de framework si existe
     if (frameworkFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.frameworks.includes(frameworkFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.frameworks) && idea.frameworks.includes(frameworkFilter)
+      })
     }
 
     // Extraer todas las bases de datos de todas las ideas filtradas
-    const allDatabases = filteredIdeas.flatMap((idea) => idea.basesdedatos)
+    const allDatabases = filteredIdeas.flatMap((idea) => {
+      // Asegurarse de que idea.basesdedatos existe y es un array
+      if (Array.isArray(idea.basesdedatos)) {
+        return idea.basesdedatos
+      }
+      // Intentar usar baseDatos si basesdedatos no existe
+      if (Array.isArray(idea.baseDatos)) {
+        return idea.baseDatos
+      }
+      return []
+    })
 
     // Eliminar duplicados y ordenar
     const uniqueDatabases = Array.from(new Set(allDatabases))
-    setDatabases(uniqueDatabases.sort())
+
+    // Add modern databases if they don't exist in the list
+    const modernDatabases = ["Supabase", "PlanetScale", "Neon", "Turso", "Upstash", "Fauna", "Xata", "Convex"]
+    const combinedDatabases = [...uniqueDatabases]
+
+    modernDatabases.forEach((db) => {
+      if (!combinedDatabases.includes(db)) {
+        combinedDatabases.push(db)
+      }
+    })
+
+    setDatabases(combinedDatabases.sort())
   }, [appTypeFilter, languageFilter, frameworkFilter])
 
   return (

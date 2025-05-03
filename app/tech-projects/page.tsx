@@ -135,25 +135,40 @@ export default function TechProjects() {
 
     let filteredIdeas = [...projectIdeas]
 
-    // Aplicar filtros
+    // Aplicar filtros con comprobaciones de seguridad
     if (appTypeFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        // Asegurarse de que idea.tipo existe antes de usar includes
+        return idea.tipo === appTypeFilter
+      })
     }
 
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        // Asegurarse de que idea.tecnologias existe y es un array antes de usar includes
+        return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
+      })
     }
 
     if (frameworkFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.frameworks.includes(frameworkFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        // Asegurarse de que idea.frameworks existe y es un array antes de usar includes
+        return Array.isArray(idea.frameworks) && idea.frameworks.includes(frameworkFilter)
+      })
     }
 
     if (databaseFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.basesdedatos.includes(databaseFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        // Asegurarse de que idea.basesdedatos existe y es un array antes de usar includes
+        return Array.isArray(idea.basesdedatos) && idea.basesdedatos.includes(databaseFilter)
+      })
     }
 
     if (nivelFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.nivel === nivelFilter)
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        // Asegurarse de que idea.nivel existe antes de comparar
+        return idea.nivel === nivelFilter
+      })
     }
 
     // Actualizar estado de noResults
@@ -166,7 +181,7 @@ export default function TechProjects() {
       return
     }
 
-    // Filtrar ideas según los criterios seleccionados
+    // Filtrar ideas según los criterios seleccionados con comprobaciones de seguridad
     let filteredIdeas = [...projectIdeas]
 
     if (appTypeFilter) {
@@ -174,15 +189,21 @@ export default function TechProjects() {
     }
 
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
+      })
     }
 
     if (frameworkFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.frameworks.includes(frameworkFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.frameworks) && idea.frameworks.includes(frameworkFilter)
+      })
     }
 
     if (databaseFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.basesdedatos.includes(databaseFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.basesdedatos) && idea.basesdedatos.includes(databaseFilter)
+      })
     }
 
     if (nivelFilter) {

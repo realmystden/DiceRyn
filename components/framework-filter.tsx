@@ -58,15 +58,41 @@ export function FrameworkFilter() {
 
     // Aplicar filtro de lenguaje si existe
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tecnologias.includes(languageFilter))
+      filteredIdeas = filteredIdeas.filter((idea) => {
+        return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
+      })
     }
 
     // Extraer todos los frameworks de todas las ideas filtradas
-    const allFrameworks = filteredIdeas.flatMap((idea) => idea.frameworks)
+    const allFrameworks = filteredIdeas.flatMap((idea) => {
+      // Asegurarse de que idea.frameworks existe y es un array
+      return Array.isArray(idea.frameworks) ? idea.frameworks : []
+    })
 
     // Eliminar duplicados y ordenar
     const uniqueFrameworks = Array.from(new Set(allFrameworks))
-    setFrameworks(uniqueFrameworks.sort())
+
+    // Add modern frameworks if they don't exist in the list
+    const modernFrameworks = [
+      "Next.js",
+      "Nuxt.js",
+      "SvelteKit",
+      "Remix",
+      "Astro",
+      "Gatsby",
+      "Vite",
+      "Tailwind CSS",
+      "shadcn/ui",
+    ]
+    const combinedFrameworks = [...uniqueFrameworks]
+
+    modernFrameworks.forEach((framework) => {
+      if (!combinedFrameworks.includes(framework)) {
+        combinedFrameworks.push(framework)
+      }
+    })
+
+    setFrameworks(combinedFrameworks.sort())
   }, [appTypeFilter, languageFilter])
 
   return (

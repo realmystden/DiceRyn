@@ -2469,6 +2469,8 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
         }
       },
 
+      // Update the checkAndUnlockAchievements function to better handle achievement unlocking:
+
       checkAndUnlockAchievements: () => {
         const state = get()
         const totalProjects = state.getTotalCompletedProjects()
@@ -2532,14 +2534,14 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("developer") ||
               achievement.id.includes("apprentice")
             ) {
-              shouldUnlock = languageCounts.some((count) => count >= 5)
+              shouldUnlock = languageCounts.some((count) => count >= 3) // Reduced from 5 to 3 for easier unlocking
             } else if (
               achievement.id.includes("ninja") ||
               achievement.id.includes("master") ||
               achievement.id.includes("wizard") ||
               achievement.id.includes("guru")
             ) {
-              shouldUnlock = languageCounts.some((count) => count >= 10)
+              shouldUnlock = languageCounts.some((count) => count >= 5) // Reduced from 10 to 5 for easier unlocking
             } else if (achievement.id === "functional-programmer") {
               // Al menos un proyecto en alguno de estos lenguajes
               shouldUnlock = languageCounts.some((count) => count >= 1)
@@ -2552,7 +2554,7 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               state.completedProjects.forEach((project) => {
                 project.technologies.forEach((tech) => uniqueLanguages.add(tech))
               })
-              shouldUnlock = uniqueLanguages.size >= 6
+              shouldUnlock = uniqueLanguages.size >= 4 // Reduced from 6 to 4 for easier unlocking
             }
           }
 
@@ -2568,27 +2570,27 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("enthusiast") ||
               achievement.id.includes("developer")
             ) {
-              shouldUnlock = frameworkCounts.some((count) => count >= 5)
+              shouldUnlock = frameworkCounts.some((count) => count >= 3) // Reduced from 5 to 3 for easier unlocking
             } else if (
               achievement.id.includes("architect") ||
               achievement.id.includes("master") ||
               achievement.id.includes("expert")
             ) {
-              shouldUnlock = frameworkCounts.some((count) => count >= 10)
+              shouldUnlock = frameworkCounts.some((count) => count >= 5) // Reduced from 10 to 5 for easier unlocking
             } else if (achievement.id === "framework-master") {
               // Contar cuántos frameworks diferentes se han usado
               const uniqueFrameworks = new Set<string>()
               state.completedProjects.forEach((project) => {
                 project.frameworks.forEach((framework) => uniqueFrameworks.add(framework))
               })
-              shouldUnlock = uniqueFrameworks.size >= 5
+              shouldUnlock = uniqueFrameworks.size >= 3 // Reduced from 5 to 3 for easier unlocking
             } else if (achievement.id === "framework-collector") {
               // Contar cuántos frameworks diferentes se han usado
               const uniqueFrameworks = new Set<string>()
               state.completedProjects.forEach((project) => {
                 project.frameworks.forEach((framework) => uniqueFrameworks.add(framework))
               })
-              shouldUnlock = uniqueFrameworks.size >= 10
+              shouldUnlock = uniqueFrameworks.size >= 5 // Reduced from 10 to 5 for easier unlocking
             }
           }
 
@@ -2603,16 +2605,16 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("explorer") ||
               achievement.id.includes("developer")
             ) {
-              shouldUnlock = dbCounts.some((count) => count >= 5)
+              shouldUnlock = dbCounts.some((count) => count >= 3) // Reduced from 5 to 3 for easier unlocking
             } else if (achievement.id.includes("architect") || achievement.id.includes("master")) {
-              shouldUnlock = dbCounts.some((count) => count >= 10)
+              shouldUnlock = dbCounts.some((count) => count >= 5) // Reduced from 10 to 5 for easier unlocking
             } else if (achievement.id === "database-collector") {
               // Contar cuántas bases de datos diferentes se han usado
               const uniqueDatabases = new Set<string>()
               state.completedProjects.forEach((project) => {
                 project.databases.forEach((db) => uniqueDatabases.add(db))
               })
-              shouldUnlock = uniqueDatabases.size >= 5
+              shouldUnlock = uniqueDatabases.size >= 3 // Reduced from 5 to 3 for easier unlocking
             }
           }
 
@@ -2627,9 +2629,9 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("engineer") ||
               achievement.id.includes("explorer")
             ) {
-              shouldUnlock = appTypeCounts.some((count) => count >= 5)
+              shouldUnlock = appTypeCounts.some((count) => count >= 3) // Reduced from 5 to 3 for easier unlocking
             } else if (achievement.id.includes("architect") || achievement.id.includes("researcher")) {
-              shouldUnlock = appTypeCounts.some((count) => count >= 10)
+              shouldUnlock = appTypeCounts.some((count) => count >= 5) // Reduced from 10 to 5 for easier unlocking
             }
           }
 
@@ -2699,7 +2701,7 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
                 )
               })
             })
-            shouldUnlock = projectsWithStack.length >= 5 // Típicamente se requieren 5 proyectos
+            shouldUnlock = projectsWithStack.length >= 3 // Reduced from 5 to 3 for easier unlocking
           }
 
           // Verificar requisitos de combinaciones específicas
@@ -2732,7 +2734,7 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               return hasLanguages && hasFrameworks && hasFrameworks2 && hasDatabases
             })
 
-            shouldUnlock = projectsWithCombination.length >= count
+            shouldUnlock = projectsWithCombination.length >= Math.max(1, Math.floor(count / 2)) // Reduced requirements for easier unlocking
           }
 
           // Verificar requisitos de tags
@@ -2746,7 +2748,7 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
                 )
               })
             })
-            shouldUnlock = projectsWithTags.length >= 3 // Típicamente se requieren 3 proyectos
+            shouldUnlock = projectsWithTags.length >= 2 // Reduced from 3 to 2 for easier unlocking
           }
 
           // Desbloquear el logro si se cumplen las condiciones

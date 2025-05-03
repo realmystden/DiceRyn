@@ -19,6 +19,10 @@ export function AppTypeFilter() {
     { value: "Videojuego", label: "Videojuego", emoji: "🎮" },
     { value: "API", label: "API", emoji: "🔌" },
     { value: "Aplicación de Consola", label: "Aplicación de Consola", emoji: "⌨️" },
+    { value: "Programación Esotérica", label: "Programación Esotérica", emoji: "🧠" },
+    { value: "Backend", label: "Backend", emoji: "⚙️" },
+    { value: "Frontend", label: "Frontend", emoji: "🖼️" },
+    { value: "Fullstack", label: "Fullstack", emoji: "🧰" },
   ]
 
   const getAppTypeColor = (type: string | null) => {

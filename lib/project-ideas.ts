@@ -7,7 +7,22 @@ export interface ProjectIdea {
   frameworks: string[]
   basesdedatos: string[]
   nivel: "Student" | "Trainee" | "Junior" | "Senior"
-  tipo: "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | "Videojuego" | "Aplicación de Consola"
+  tipo:
+    | "Aplicación Web"
+    | "Aplicación Móvil"
+    | "Aplicación de Escritorio"
+    | "Videojuego"
+    | "Aplicación de Consola"
+    | "API"
+    | "Programación Esotérica"
+    | "Backend"
+    | "Frontend"
+    | "Fullstack"
+  id?: string
+  nombre?: string
+  baseDatos?: string[]
+  caracteristicas?: string[]
+  complejidad?: number
 }
 
 // Importar ideas adicionales
@@ -17,28 +32,58 @@ import { additionalLanguages } from "./additional-languages"
 import { additionalLanguagesFrameworks } from "./additional-languages-frameworks"
 import { brainfuckProjects } from "./project-ideas-additional"
 import { additionalLanguagesTwo } from "./additional-languages-two"
+// Import the additional project ideas
+import { additionalProjectIdeas } from "./additional-project-ideas"
+
+// Función para normalizar las ideas de proyectos
+const normalizeProjectIdea = (idea: any): ProjectIdea => {
+  return {
+    titulo: idea.titulo || idea.nombre || "Proyecto sin título",
+    descripcion: idea.descripcion || "Sin descripción",
+    categoria: idea.categoria || "General",
+    tecnologias: idea.tecnologias || [],
+    frameworks: idea.frameworks || [],
+    basesdedatos: idea.basesdedatos || idea.baseDatos || [],
+    nivel: idea.nivel || "Junior",
+    tipo: idea.tipo || "Aplicación Web",
+    id: idea.id,
+    nombre: idea.nombre,
+    baseDatos: idea.baseDatos,
+    caracteristicas: idea.caracteristicas,
+    complejidad: idea.complejidad,
+  }
+}
+
+// Normalizar y combinar todas las ideas de proyectos
+const normalizeIdeas = (ideas: any[]): ProjectIdea[] => {
+  return ideas.map(normalizeProjectIdea)
+}
 
 // Combinar todas las ideas de proyectos
 export const projectIdeas = [
-  ...gameProjectIdeas,
-  ...projectIdeasStudent,
-  ...additionalLanguages,
-  ...additionalLanguagesFrameworks,
-  ...brainfuckProjects,
-  ...additionalLanguagesTwo,
+  ...normalizeIdeas(gameProjectIdeas || []),
+  ...normalizeIdeas(projectIdeasStudent || []),
+  ...normalizeIdeas(additionalLanguages || []),
+  ...normalizeIdeas(additionalLanguagesFrameworks || []),
+  ...normalizeIdeas(brainfuckProjects || []),
+  ...normalizeIdeas(additionalLanguagesTwo || []),
+  ...normalizeIdeas(additionalProjectIdeas || []),
   // Ideas originales
   {
     id: "1",
+    titulo: "Sistema de Gestión de Inventario",
     nombre: "Sistema de Gestión de Inventario",
     descripcion:
       "Desarrolla un sistema para gestionar el inventario de una tienda, con funcionalidades para añadir, editar y eliminar productos, así como para realizar un seguimiento de las existencias.",
     nivel: "Junior",
-    tipo: "Web",
+    tipo: "Aplicación Web",
     tecnologias: ["JavaScript", "React", "Node.js"],
     frameworks: ["Express"],
+    basesdedatos: ["MongoDB"],
     baseDatos: ["MongoDB"],
     caracteristicas: ["CRUD", "Autenticación", "Reportes"],
     complejidad: 3,
+    categoria: "Negocios",
   },
   {
     titulo: "Planificador de Viajes Interactivo",
