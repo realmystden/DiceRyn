@@ -2,7 +2,7 @@
 import type { ProjectIdea } from "./project-ideas"
 
 // Lista de ideas para nivel Student
-export const studentProjectIdeas: ProjectIdea[] = [
+export const projectIdeasStudent: ProjectIdea[] = [
   // HTML/CSS - 20 proyectos
   {
     titulo: "Página Personal Simple",

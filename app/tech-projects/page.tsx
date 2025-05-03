@@ -210,6 +210,86 @@ export default function TechProjects() {
     setNivelFilter(null)
   }
 
+  // Función para obtener el color según el nivel
+  const getLevelColor = (level: string | null) => {
+    switch (level) {
+      case "Student":
+        return "text-green-400"
+      case "Trainee":
+        return "text-blue-400"
+      case "Junior":
+        return "text-yellow-400"
+      case "Senior":
+        return "text-orange-400"
+      case "Master":
+        return "text-red-400"
+      default:
+        return "text-white"
+    }
+  }
+
+  // Función para obtener el emoji según el tipo de filtro
+  const getFilterEmoji = (filterType: string, value: string | null) => {
+    if (!value) return ""
+
+    const emojiMap: Record<string, Record<string, string>> = {
+      appType: {
+        Web: "🌐",
+        Móvil: "📱",
+        Desktop: "💻",
+        API: "🔌",
+        Juego: "🎮",
+        CLI: "⌨️",
+      },
+      language: {
+        JavaScript: "📜",
+        Python: "🐍",
+        Java: "☕",
+        "C#": "🔷",
+        PHP: "🐘",
+        Ruby: "💎",
+        Go: "🐹",
+        Rust: "🦀",
+        TypeScript: "📘",
+        Swift: "🍎",
+        Kotlin: "🤖",
+        "C++": "⚙️",
+        Brainfuck: "🧠",
+      },
+      framework: {
+        React: "⚛️",
+        Angular: "🅰️",
+        Vue: "🟢",
+        "Next.js": "▲",
+        Express: "🚂",
+        Django: "🦄",
+        Spring: "🍃",
+        Laravel: "🔺",
+        Flutter: "🦋",
+        "React Native": "📱",
+      },
+      database: {
+        MySQL: "🐬",
+        PostgreSQL: "🐘",
+        MongoDB: "🍃",
+        SQLite: "🔋",
+        Firebase: "🔥",
+        Redis: "🔴",
+        Oracle: "☁️",
+        "SQL Server": "🔷",
+      },
+      level: {
+        Student: "🧠",
+        Trainee: "🌱",
+        Junior: "🚀",
+        Senior: "⭐",
+        Master: "👑",
+      },
+    }
+
+    return filterType in emojiMap && value in emojiMap[filterType] ? emojiMap[filterType][value] : ""
+  }
+
   if (!mounted) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-[#121214] text-white">
@@ -230,11 +310,33 @@ export default function TechProjects() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <AppTypeFilter />
-          <LanguageFilter />
-          <FrameworkFilter />
-          <DatabaseFilter />
-          <NivelFilter />
+          <div className="relative">
+            <div className="absolute -top-2 -right-2 z-10 text-lg">{getFilterEmoji("appType", appTypeFilter)}</div>
+            <AppTypeFilter />
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-2 -right-2 z-10 text-lg">{getFilterEmoji("language", languageFilter)}</div>
+            <LanguageFilter />
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-2 -right-2 z-10 text-lg">{getFilterEmoji("framework", frameworkFilter)}</div>
+            <FrameworkFilter />
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-2 -right-2 z-10 text-lg">{getFilterEmoji("database", databaseFilter)}</div>
+            <DatabaseFilter />
+          </div>
+
+          <div className="relative">
+            <div className="absolute -top-2 -right-2 z-10 text-lg">{getFilterEmoji("level", nivelFilter)}</div>
+            <div className={getLevelColor(nivelFilter)}>
+              <NivelFilter />
+            </div>
+          </div>
+
           <SortOptions />
         </div>
       </AnimatedSection>

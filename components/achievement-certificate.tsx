@@ -1,131 +1,167 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { Achievement } from "@/lib/store"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Download, Share2 } from "lucide-react"
+import { useRef } from "react"
+import { motion } from "framer-motion"
 import html2canvas from "html2canvas"
 
 interface AchievementCertificateProps {
-  achievement: Achievement
-  open: boolean
-  onClose: () => void
+  title: string
+  description: string
+  level: string
+  icon: string
+  isSpecialBadge?: boolean
 }
 
-export function AchievementCertificate({ achievement, open, onClose }: AchievementCertificateProps) {
-  const [mounted, setMounted] = useState(false)
-  const [userName, setUserName] = useState<string>("")
+export function AchievementCertificate({
+  title,
+  description,
+  level,
+  icon,
+  isSpecialBadge = false,
+}: AchievementCertificateProps) {
+  const certificateRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    setMounted(true)
-    // Intentar obtener el nombre del usuario del localStorage
-    const savedName = localStorage.getItem("userName") || "Desarrollador"
-    setUserName(savedName)
-  }, [])
-
-  if (!mounted) return null
-
-  const handleDownload = async () => {
-    const certificateElement = document.getElementById("achievement-certificate")
-    if (!certificateElement) return
+  const downloadCertificate = async () => {
+    if (!certificateRef.current) return
 
     try {
-      const canvas = await html2canvas(certificateElement, {
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2,
         backgroundColor: null,
-        scale: 2, // Mejor calidad
       })
-
-      const dataUrl = canvas.toDataURL("image/png")
+      const image = canvas.toDataURL("image/png")
       const link = document.createElement("a")
-      link.download = `certificado-${achievement.id}.png`
-      link.href = dataUrl
+      link.href = image
+      link.download = `${isSpecialBadge ? "insignia" : "logro"}-${title.toLowerCase().replace(/\s+/g, "-")}.png`
       link.click()
     } catch (error) {
       console.error("Error al generar el certificado:", error)
     }
   }
 
-  const handleShare = async () => {
-    const certificateElement = document.getElementById("achievement-certificate")
-    if (!certificateElement || !navigator.share) return
+  const shareCertificate = async () => {
+    if (!certificateRef.current) return
 
     try {
-      const canvas = await html2canvas(certificateElement, {
-        backgroundColor: null,
+      const canvas = await html2canvas(certificateRef.current, {
         scale: 2,
+        backgroundColor: null,
       })
+      const image = canvas.toDataURL("image/png")
 
-      const dataUrl = canvas.toDataURL("image/png")
+      if (navigator.share) {
+        const blob = await (await fetch(image)).blob()
+        const file = new File(
+          [blob],
+          `${isSpecialBadge ? "insignia" : "logro"}-${title.toLowerCase().replace(/\s+/g, "-")}.png`,
+          {
+            type: "image/png",
+          },
+        )
 
-      // Convertir dataURL a Blob
-      const blob = await (await fetch(dataUrl)).blob()
-      const file = new File([blob], `certificado-${achievement.id}.png`, { type: "image/png" })
-
-      await navigator.share({
-        title: `¡He desbloqueado el logro ${achievement.title}!`,
-        text: `¡He desbloqueado el logro ${achievement.title} en DiceRyn!`,
-        files: [file],
-      })
+        await navigator.share({
+          title: `${isSpecialBadge ? "Insignia" : "Logro"} en DiceRyn: ${title}`,
+          text: `¡He conseguido ${isSpecialBadge ? "la insignia" : "el logro"} "${title}" en DiceRyn!`,
+          files: [file],
+        })
+      } else {
+        alert(
+          "Tu navegador no soporta la función de compartir. Puedes descargar el certificado y compartirlo manualmente.",
+        )
+      }
     } catch (error) {
-      console.error("Error al compartir:", error)
+      console.error("Error al compartir el certificado:", error)
     }
   }
 
-  const levelColors = {
-    Student: "from-green-600 to-green-900",
-    Trainee: "from-blue-600 to-blue-900",
-    Junior: "from-indigo-600 to-indigo-900",
-    Senior: "from-purple-600 to-purple-900",
-    Master: "from-amber-600 to-amber-900",
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case "Student":
+        return "from-green-600 to-green-900"
+      case "Trainee":
+        return "from-blue-600 to-blue-900"
+      case "Junior":
+        return "from-yellow-600 to-yellow-900"
+      case "Senior":
+        return "from-orange-600 to-orange-900"
+      case "Master":
+        return "from-red-600 to-red-900"
+      default:
+        return "from-purple-600 to-purple-900"
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md md:max-w-lg bg-transparent border-0 p-0">
-        <div
-          id="achievement-certificate"
-          className={`fantasy-card bg-gradient-to-br ${levelColors[achievement.level]} p-8 border-4 border-double border-white/30 shadow-2xl`}
-        >
-          <div className="text-center">
-            <div className="text-6xl mb-4">{achievement.icon}</div>
-            <h2 className="text-3xl font-cinzel font-bold text-white mb-2">Certificado de Logro</h2>
-            <div className="h-1 w-32 bg-white/50 mx-auto mb-4"></div>
+    <div className="flex flex-col items-center">
+      <motion.div
+        ref={certificateRef}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-2xl bg-gradient-to-b from-gray-900 to-black p-8 rounded-lg border-4 border-double border-gold relative overflow-hidden"
+      >
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('/placeholder.svg?key=gupw7')] bg-repeat opacity-20"></div>
+        </div>
 
-            <p className="text-lg text-white/80 font-fondamento mb-6">Este certificado reconoce que</p>
-
-            <p className="text-2xl font-cinzel font-bold text-white mb-6">{userName}</p>
-
-            <p className="text-lg text-white/80 font-fondamento mb-4">ha desbloqueado el logro</p>
-
-            <h3 className="text-3xl font-cinzel font-bold text-white mb-2">{achievement.title}</h3>
-
-            <p className="text-md text-white/80 font-fondamento mb-6">{achievement.description}</p>
-
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <div className="h-px bg-white/50 flex-1"></div>
-              <span className="text-white/80 font-fondamento px-2">Nivel {achievement.level}</span>
-              <div className="h-px bg-white/50 flex-1"></div>
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <div className="text-gold text-3xl font-cinzel font-bold mb-2">
+              Certificado de {isSpecialBadge ? "Insignia Especial" : "Logro"}
             </div>
+            <div className="text-gray-400 font-fondamento">DiceRyn - Generador de Ideas de Proyectos</div>
+          </div>
 
-            <p className="text-sm text-white/70 font-fondamento">DiceRyn - Generador de Ideas de Proyectos</p>
+          {/* Seal and ribbon */}
+          <div className="absolute -right-10 -top-10 transform rotate-45">
+            <div className="w-40 h-40 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold to-amber-700 flex items-center justify-center text-3xl shadow-lg">
+                {icon}
+              </div>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="text-center mb-8">
+            <div className="text-2xl font-cinzel font-bold text-white mb-4">{title}</div>
+            <div className="text-gray-300 font-fondamento mb-4">{description}</div>
+            <div
+              className={`inline-block px-4 py-1 rounded-full text-white text-sm font-bold bg-gradient-to-r ${getLevelColor(
+                level,
+              )}`}
+            >
+              Nivel: {level}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-8 pt-4 border-t border-gray-700">
+            <div className="text-gray-400 font-fondamento text-sm">
+              Este certificado acredita que el usuario ha completado con éxito los requisitos para obtener{" "}
+              {isSpecialBadge ? "la insignia" : "el logro"}.
+            </div>
+            <div className="text-gray-500 font-fondamento text-xs mt-2">Fecha: {new Date().toLocaleDateString()}</div>
           </div>
         </div>
+      </motion.div>
 
-        <div className="flex justify-center gap-4 mt-4">
-          <Button onClick={handleDownload} className="fantasy-button bg-indigo-900/80 hover:bg-indigo-800 text-white">
-            <Download className="mr-2 h-4 w-4" />
-            <span className="font-fondamento">Descargar</span>
-          </Button>
-
-          {navigator.share && (
-            <Button onClick={handleShare} className="fantasy-button bg-purple-900/80 hover:bg-purple-800 text-white">
-              <Share2 className="mr-2 h-4 w-4" />
-              <span className="font-fondamento">Compartir</span>
-            </Button>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+      {/* Actions */}
+      <div className="flex space-x-4 mt-6">
+        <button
+          onClick={downloadCertificate}
+          className="px-4 py-2 bg-purple-700 hover:bg-purple-600 rounded font-fondamento transition-colors"
+        >
+          Descargar Certificado
+        </button>
+        <button
+          onClick={shareCertificate}
+          className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded font-fondamento transition-colors"
+        >
+          Compartir
+        </button>
+      </div>
+    </div>
   )
 }

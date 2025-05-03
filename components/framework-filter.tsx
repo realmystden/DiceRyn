@@ -13,6 +13,40 @@ export function FrameworkFilter() {
   const { frameworkFilter, setFrameworkFilter, appTypeFilter, languageFilter } = useProjectIdeasStore()
   const [frameworks, setFrameworks] = useState<string[]>([])
 
+  // Framework emojis mapping
+  const frameworkEmojis: Record<string, string> = {
+    React: "⚛️",
+    Angular: "🅰️",
+    Vue: "🟢",
+    "Next.js": "▲",
+    Express: "🚂",
+    Django: "🦄",
+    Spring: "🍃",
+    Laravel: "🔺",
+    Flutter: "🦋",
+    "React Native": "📱",
+    "Node.js": "🟩",
+    "Ruby on Rails": "🛤️",
+    "ASP.NET": "🔷",
+    Svelte: "🔥",
+    Flask: "🧪",
+    TensorFlow: "🧠",
+    PyTorch: "🔥",
+    Unity: "🎮",
+    "Unreal Engine": "🎯",
+    Electron: "⚡",
+    Tauri: "🦀",
+    "Three.js": "🌐",
+    "D3.js": "📊",
+    "Babylon.js": "🎲",
+    Akka: "🔄",
+    Spark: "⚡",
+    Play: "▶️",
+    gRPC: "📡",
+    GraphQL: "🔍",
+    WebSockets: "🔌",
+  }
+
   // Extraer frameworks únicos de las ideas filtradas por tipo de aplicación y lenguaje
   useEffect(() => {
     let filteredIdeas = [...projectIdeas]
@@ -44,7 +78,13 @@ export function FrameworkFilter() {
           aria-expanded={open}
           className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
         >
-          {frameworkFilter ? frameworkFilter : "Todos los frameworks"}
+          {frameworkFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{frameworkEmojis[frameworkFilter] || "🧩"}</span> {frameworkFilter}
+            </span>
+          ) : (
+            "Todos los frameworks"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -74,7 +114,9 @@ export function FrameworkFilter() {
                   className="cursor-pointer font-fondamento"
                 >
                   <Check className={`mr-2 h-4 w-4 ${frameworkFilter === framework ? "opacity-100" : "opacity-0"}`} />
-                  {framework}
+                  <span className="flex items-center">
+                    <span className="mr-2">{frameworkEmojis[framework] || "🧩"}</span> {framework}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

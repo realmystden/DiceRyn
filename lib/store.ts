@@ -108,6 +108,9 @@ interface ProjectIdeasStore {
   getProjectsByDayType: (dayType: "weekday" | "weekend") => number
 
   checkAndUnlockAchievements: () => void
+
+  // Add this function to the store to check if all achievements are completed
+  checkAllAchievementsCompleted: () => void
 }
 
 // Actualizar la lista de logros predeterminados con logros de consistencia
@@ -1866,6 +1869,153 @@ const defaultAchievements: Achievement[] = [
       period: 6,
     },
   },
+  {
+    id: "achievement-master",
+    title: "Maestro de Logros",
+    description: "Completa todos los demás logros disponibles",
+    level: "Master",
+    completed: false,
+    icon: "🏆👑",
+  },
+  // Add these new achievements to the defaultAchievements array in store.ts
+  // Insert this code at the appropriate location in the defaultAchievements array
+
+  // New language-specific achievements
+  {
+    id: "astro-explorer",
+    title: "Explorador de Astro",
+    description: "Completa 3 proyectos usando Astro",
+    level: "Junior",
+    completed: false,
+    icon: "🚀",
+    requiredLanguages: ["Astro"],
+  },
+  {
+    id: "astro-architect",
+    title: "Arquitecto de Astro",
+    description: "Completa 7 proyectos usando Astro",
+    level: "Senior",
+    completed: false,
+    icon: "🌠",
+    requiredLanguages: ["Astro"],
+  },
+  {
+    id: "svelte-enthusiast",
+    title: "Entusiasta de Svelte",
+    description: "Completa 3 proyectos usando Svelte",
+    level: "Junior",
+    completed: false,
+    icon: "🧡",
+    requiredLanguages: ["Svelte"],
+  },
+  {
+    id: "svelte-master",
+    title: "Maestro de Svelte",
+    description: "Completa 7 proyectos usando Svelte",
+    level: "Senior",
+    completed: false,
+    icon: "🔥",
+    requiredLanguages: ["Svelte"],
+  },
+  {
+    id: "deno-explorer",
+    title: "Explorador de Deno",
+    description: "Completa 3 proyectos usando Deno",
+    level: "Junior",
+    completed: false,
+    icon: "🦕",
+    requiredLanguages: ["Deno"],
+  },
+  {
+    id: "bun-pioneer",
+    title: "Pionero de Bun",
+    description: "Completa 3 proyectos usando Bun",
+    level: "Junior",
+    completed: false,
+    icon: "🥐",
+    requiredLanguages: ["Bun"],
+  },
+  {
+    id: "elm-functional",
+    title: "Programador Funcional Elm",
+    description: "Completa 3 proyectos usando Elm",
+    level: "Junior",
+    completed: false,
+    icon: "🌳",
+    requiredLanguages: ["Elm"],
+  },
+  {
+    id: "rescript-developer",
+    title: "Desarrollador ReScript",
+    description: "Completa 3 proyectos usando ReScript",
+    level: "Junior",
+    completed: false,
+    icon: "📝",
+    requiredLanguages: ["ReScript"],
+  },
+  {
+    id: "solidjs-builder",
+    title: "Constructor SolidJS",
+    description: "Completa 3 proyectos usando SolidJS",
+    level: "Junior",
+    completed: false,
+    icon: "💎",
+    requiredLanguages: ["SolidJS"],
+  },
+  {
+    id: "qwik-speedster",
+    title: "Velocista Qwik",
+    description: "Completa 3 proyectos usando Qwik",
+    level: "Junior",
+    completed: false,
+    icon: "⚡",
+    requiredLanguages: ["Qwik"],
+  },
+  {
+    id: "remix-composer",
+    title: "Compositor Remix",
+    description: "Completa 3 proyectos usando Remix",
+    level: "Junior",
+    completed: false,
+    icon: "🎵",
+    requiredLanguages: ["Remix"],
+  },
+  {
+    id: "htmx-minimalist",
+    title: "Minimalista HTMX",
+    description: "Completa 3 proyectos usando HTMX",
+    level: "Junior",
+    completed: false,
+    icon: "🧩",
+    requiredLanguages: ["HTMX"],
+  },
+  {
+    id: "modern-web-explorer",
+    title: "Explorador Web Moderno",
+    description: "Completa proyectos usando al menos 3 frameworks modernos (Astro, Svelte, SolidJS, Qwik o Remix)",
+    level: "Senior",
+    completed: false,
+    icon: "🌐",
+    requiredLanguages: ["Astro", "Svelte", "SolidJS", "Qwik", "Remix"],
+  },
+  {
+    id: "runtime-pioneer",
+    title: "Pionero de Runtimes",
+    description: "Completa proyectos usando tanto Deno como Bun",
+    level: "Senior",
+    completed: false,
+    icon: "🏃",
+    requiredLanguages: ["Deno", "Bun"],
+  },
+  {
+    id: "badge-collector",
+    title: "Coleccionista de Insignias",
+    description: "Desbloquea 10 insignias diferentes",
+    level: "Master",
+    completed: false,
+    icon: "🏅",
+    requiredProjects: 20,
+  },
 ]
 
 export const useProjectIdeasStore = create<ProjectIdeasStore>()(
@@ -2025,6 +2175,12 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
             achievement.id === achievementId ? { ...achievement, completed: true } : achievement,
           ),
         }))
+
+        // Check if all achievements are completed after unlocking a new one
+        // BUT only if we're not already unlocking the "achievement-master" achievement
+        if (achievementId !== "achievement-master") {
+          get().checkAllAchievementsCompleted()
+        }
       },
 
       getUnlockedAchievements: () => {
@@ -2281,6 +2437,38 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
         return projectsByDayType.length
       },
 
+      getCompletedProjectsByDatabase: (database: string) => {
+        return get().completedProjects.filter((p) => p.databases.includes(database)).length
+      },
+
+      getCompletedProjectsByAppType: (appType: string) => {
+        return get().completedProjects.filter(
+          (p) =>
+            p.title.toLowerCase().includes(appType.toLowerCase()) ||
+            p.technologies.some((tech) => tech.toLowerCase().includes(appType.toLowerCase())),
+        ).length
+      },
+
+      // Check if all achievements are completed
+      checkAllAchievementsCompleted: () => {
+        const state = get()
+        const achievements = state.achievements
+
+        // Check if all achievements except "achievement-master" are completed
+        const allOtherAchievementsCompleted = achievements
+          .filter((a) => a.id !== "achievement-master")
+          .every((a) => a.completed)
+
+        // If all other achievements are completed, unlock the "achievement-master" achievement
+        // BUT only if it's not already completed to avoid infinite recursion
+        if (allOtherAchievementsCompleted) {
+          const achievementMaster = achievements.find((a) => a.id === "achievement-master")
+          if (achievementMaster && !achievementMaster.completed) {
+            state.unlockAchievement("achievement-master")
+          }
+        }
+      },
+
       checkAndUnlockAchievements: () => {
         const state = get()
         const totalProjects = state.getTotalCompletedProjects()
@@ -2344,20 +2532,27 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("developer") ||
               achievement.id.includes("apprentice")
             ) {
-              shouldUnlock = languageCounts.every((count) => count >= 5)
+              shouldUnlock = languageCounts.some((count) => count >= 5)
             } else if (
               achievement.id.includes("ninja") ||
               achievement.id.includes("master") ||
               achievement.id.includes("wizard") ||
               achievement.id.includes("guru")
             ) {
-              shouldUnlock = languageCounts.every((count) => count >= 10)
+              shouldUnlock = languageCounts.some((count) => count >= 10)
             } else if (achievement.id === "functional-programmer") {
               // Al menos un proyecto en alguno de estos lenguajes
               shouldUnlock = languageCounts.some((count) => count >= 1)
             } else if (achievement.id === "assembly-wizard" || achievement.id === "brainfuck-master") {
               // Solo requiere un proyecto
               shouldUnlock = languageCounts.some((count) => count >= 1)
+            } else if (achievement.id === "polyglot") {
+              // Contar cuántos lenguajes diferentes se han usado
+              const uniqueLanguages = new Set<string>()
+              state.completedProjects.forEach((project) => {
+                project.technologies.forEach((tech) => uniqueLanguages.add(tech))
+              })
+              shouldUnlock = uniqueLanguages.size >= 6
             }
           }
 
@@ -2373,13 +2568,27 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               achievement.id.includes("enthusiast") ||
               achievement.id.includes("developer")
             ) {
-              shouldUnlock = frameworkCounts.every((count) => count >= 5)
+              shouldUnlock = frameworkCounts.some((count) => count >= 5)
             } else if (
               achievement.id.includes("architect") ||
               achievement.id.includes("master") ||
               achievement.id.includes("expert")
             ) {
-              shouldUnlock = frameworkCounts.every((count) => count >= 10)
+              shouldUnlock = frameworkCounts.some((count) => count >= 10)
+            } else if (achievement.id === "framework-master") {
+              // Contar cuántos frameworks diferentes se han usado
+              const uniqueFrameworks = new Set<string>()
+              state.completedProjects.forEach((project) => {
+                project.frameworks.forEach((framework) => uniqueFrameworks.add(framework))
+              })
+              shouldUnlock = uniqueFrameworks.size >= 5
+            } else if (achievement.id === "framework-collector") {
+              // Contar cuántos frameworks diferentes se han usado
+              const uniqueFrameworks = new Set<string>()
+              state.completedProjects.forEach((project) => {
+                project.frameworks.forEach((framework) => uniqueFrameworks.add(framework))
+              })
+              shouldUnlock = uniqueFrameworks.size >= 10
             }
           }
 
@@ -2397,6 +2606,13 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
               shouldUnlock = dbCounts.some((count) => count >= 5)
             } else if (achievement.id.includes("architect") || achievement.id.includes("master")) {
               shouldUnlock = dbCounts.some((count) => count >= 10)
+            } else if (achievement.id === "database-collector") {
+              // Contar cuántas bases de datos diferentes se han usado
+              const uniqueDatabases = new Set<string>()
+              state.completedProjects.forEach((project) => {
+                project.databases.forEach((db) => uniqueDatabases.add(db))
+              })
+              shouldUnlock = uniqueDatabases.size >= 5
             }
           }
 
@@ -2464,23 +2680,83 @@ export const useProjectIdeasStore = create<ProjectIdeasStore>()(
             }
           }
 
+          // Verificar requisitos de proyectos por nivel
+          if (achievement.requiredLevelProjects) {
+            const { level, count } = achievement.requiredLevelProjects
+            const projectsOfLevel = state.getCompletedProjectsByLevel(level)
+            shouldUnlock = projectsOfLevel >= count
+          }
+
+          // Verificar requisitos de stack
+          if (achievement.requiredStack) {
+            // Contar proyectos que usan todas las tecnologías del stack
+            const projectsWithStack = state.completedProjects.filter((project) => {
+              return achievement.requiredStack!.every((tech) => {
+                return (
+                  project.technologies.includes(tech) ||
+                  project.frameworks.includes(tech) ||
+                  project.databases.includes(tech)
+                )
+              })
+            })
+            shouldUnlock = projectsWithStack.length >= 5 // Típicamente se requieren 5 proyectos
+          }
+
+          // Verificar requisitos de combinaciones específicas
+          if (achievement.requiredCombination) {
+            const { languages, frameworks, frameworks2, databases, count } = achievement.requiredCombination
+
+            // Contar proyectos que usan todas las tecnologías especificadas
+            const projectsWithCombination = state.completedProjects.filter((project) => {
+              let hasLanguages = true
+              let hasFrameworks = true
+              let hasFrameworks2 = true
+              let hasDatabases = true
+
+              if (languages) {
+                hasLanguages = languages.some((lang) => project.technologies.includes(lang))
+              }
+
+              if (frameworks) {
+                hasFrameworks = frameworks.some((framework) => project.frameworks.includes(framework))
+              }
+
+              if (frameworks2) {
+                hasFrameworks2 = frameworks2.some((framework) => project.frameworks.includes(framework))
+              }
+
+              if (databases) {
+                hasDatabases = databases.some((db) => project.databases.includes(db))
+              }
+
+              return hasLanguages && hasFrameworks && hasFrameworks2 && hasDatabases
+            })
+
+            shouldUnlock = projectsWithCombination.length >= count
+          }
+
+          // Verificar requisitos de tags
+          if (achievement.requiredTags) {
+            // Contar proyectos que tienen al menos uno de los tags requeridos
+            const projectsWithTags = state.completedProjects.filter((project) => {
+              return achievement.requiredTags!.some((tag) => {
+                return (
+                  project.title.toLowerCase().includes(tag.toLowerCase()) ||
+                  project.technologies.some((tech) => tech.toLowerCase().includes(tag.toLowerCase()))
+                )
+              })
+            })
+            shouldUnlock = projectsWithTags.length >= 3 // Típicamente se requieren 3 proyectos
+          }
+
           // Desbloquear el logro si se cumplen las condiciones
           if (shouldUnlock) {
             state.unlockAchievement(achievement.id)
           }
         })
-      },
 
-      getCompletedProjectsByDatabase: (database: string) => {
-        return get().completedProjects.filter((p) => p.databases.includes(database)).length
-      },
-
-      getCompletedProjectsByAppType: (appType: string) => {
-        return get().completedProjects.filter(
-          (p) =>
-            p.title.toLowerCase().includes(appType.toLowerCase()) ||
-            p.technologies.some((tech) => tech.toLowerCase().includes(appType.toLowerCase())),
-        ).length
+        // Check if all achievements are completed
+        state.checkAllAchievementsCompleted()
       },
     }),
     {

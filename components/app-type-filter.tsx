@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Check, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
@@ -10,14 +10,37 @@ import { useProjectIdeasStore } from "@/lib/store"
 export function AppTypeFilter() {
   const [open, setOpen] = useState(false)
   const { appTypeFilter, setAppTypeFilter } = useProjectIdeasStore()
-  const [appTypes, setAppTypes] = useState<string[]>([])
 
-  // Actualizar el filtro de tipo de aplicación para mostrar solo los tipos válidos
-  useEffect(() => {
-    // Usar solo los tipos específicos que queremos mostrar
-    const appTypes = ["Aplicación Web", "Aplicación Móvil", "Aplicación de Escritorio", "Videojuego"]
-    setAppTypes(appTypes)
-  }, [])
+  // App types with emojis
+  const appTypes = [
+    { value: "Aplicación Web", label: "Aplicación Web", emoji: "🌐" },
+    { value: "Aplicación Móvil", label: "Aplicación Móvil", emoji: "📱" },
+    { value: "Aplicación de Escritorio", label: "Aplicación de Escritorio", emoji: "💻" },
+    { value: "Videojuego", label: "Videojuego", emoji: "🎮" },
+    { value: "API", label: "API", emoji: "🔌" },
+    { value: "Aplicación de Consola", label: "Aplicación de Consola", emoji: "⌨️" },
+  ]
+
+  const getAppTypeColor = (type: string | null) => {
+    switch (type) {
+      case "Aplicación Web":
+        return "text-blue-400"
+      case "Aplicación Móvil":
+        return "text-green-400"
+      case "Aplicación de Escritorio":
+        return "text-purple-400"
+      case "API":
+        return "text-yellow-400"
+      case "Videojuego":
+        return "text-red-400"
+      case "Aplicación de Consola":
+        return "text-cyan-400"
+      default:
+        return "text-white"
+    }
+  }
+
+  const selectedType = appTypes.find((type) => type.value === appTypeFilter)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -26,9 +49,15 @@ export function AppTypeFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button text-white"
+          className={`w-full md:w-[200px] justify-between fantasy-button font-fondamento ${getAppTypeColor(appTypeFilter)}`}
         >
-          {appTypeFilter ? appTypeFilter : "Todos los tipos"}
+          {appTypeFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{selectedType?.emoji}</span> {appTypeFilter}
+            </span>
+          ) : (
+            "Todos los tipos"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -50,15 +79,17 @@ export function AppTypeFilter() {
               </CommandItem>
               {appTypes.map((type) => (
                 <CommandItem
-                  key={type}
+                  key={type.value}
                   onSelect={() => {
-                    setAppTypeFilter(type)
+                    setAppTypeFilter(type.value)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento text-white hover:bg-gray-800"
+                  className={`cursor-pointer font-fondamento hover:bg-gray-800 ${getAppTypeColor(type.value)}`}
                 >
-                  <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type ? "opacity-100" : "opacity-0"}`} />
-                  {type}
+                  <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type.value ? "opacity-100" : "opacity-0"}`} />
+                  <span className="flex items-center">
+                    <span className="mr-2">{type.emoji}</span> {type.label}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

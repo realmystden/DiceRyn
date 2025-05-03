@@ -11,8 +11,33 @@ export function NivelFilter() {
   const [open, setOpen] = useState(false)
   const { nivelFilter, setNivelFilter } = useProjectIdeasStore()
 
-  // Niveles disponibles
-  const niveles = ["Student", "Trainee", "Junior", "Senior"]
+  // Niveles disponibles con emojis
+  const niveles = [
+    { value: "Student", label: "Student", emoji: "🧠", color: "text-green-400" },
+    { value: "Trainee", label: "Trainee", emoji: "🌱", color: "text-blue-400" },
+    { value: "Junior", label: "Junior", emoji: "🚀", color: "text-yellow-400" },
+    { value: "Senior", label: "Senior", emoji: "⭐", color: "text-orange-400" },
+    { value: "Master", label: "Master", emoji: "👑", color: "text-red-400" },
+  ]
+
+  const getLevelColor = (level: string | null) => {
+    switch (level) {
+      case "Student":
+        return "text-green-400"
+      case "Trainee":
+        return "text-blue-400"
+      case "Junior":
+        return "text-yellow-400"
+      case "Senior":
+        return "text-orange-400"
+      case "Master":
+        return "text-red-400"
+      default:
+        return "text-white"
+    }
+  }
+
+  const selectedLevel = niveles.find((nivel) => nivel.value === nivelFilter)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -21,9 +46,15 @@ export function NivelFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
+          className={`w-full md:w-[200px] justify-between fantasy-button font-fondamento ${getLevelColor(nivelFilter)}`}
         >
-          {nivelFilter ? nivelFilter : "Todos los niveles"}
+          {nivelFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{selectedLevel?.emoji}</span> {nivelFilter}
+            </span>
+          ) : (
+            "Todos los niveles"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -45,15 +76,17 @@ export function NivelFilter() {
               </CommandItem>
               {niveles.map((nivel) => (
                 <CommandItem
-                  key={nivel}
+                  key={nivel.value}
                   onSelect={() => {
-                    setNivelFilter(nivel as "Student" | "Trainee" | "Junior" | "Senior")
+                    setNivelFilter(nivel.value as "Student" | "Trainee" | "Junior" | "Senior")
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className={`cursor-pointer font-fondamento ${nivel.color}`}
                 >
-                  <Check className={`mr-2 h-4 w-4 ${nivelFilter === nivel ? "opacity-100" : "opacity-0"}`} />
-                  {nivel}
+                  <Check className={`mr-2 h-4 w-4 ${nivelFilter === nivel.value ? "opacity-100" : "opacity-0"}`} />
+                  <span className="flex items-center">
+                    <span className="mr-2">{nivel.emoji}</span> {nivel.label}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

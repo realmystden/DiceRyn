@@ -9,7 +9,7 @@ import type { ProjectIdea } from "./project-ideas"
 
 // Lista adicional de ideas con más lenguajes de programación
 // Incluye Brainfuck como easter egg (activable con el código "bf")
-export const additionalLanguageIdeas: ProjectIdea[] = [
+export const additionalLanguages: ProjectIdea[] = [
   // Rust - 8 proyectos
   {
     titulo: "CLI para Gestión de Tareas",

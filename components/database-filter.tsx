@@ -13,6 +13,38 @@ export function DatabaseFilter() {
   const { databaseFilter, setDatabaseFilter, appTypeFilter, languageFilter, frameworkFilter } = useProjectIdeasStore()
   const [databases, setDatabases] = useState<string[]>([])
 
+  // Database emojis mapping
+  const databaseEmojis: Record<string, string> = {
+    MySQL: "🐬",
+    PostgreSQL: "🐘",
+    MongoDB: "🍃",
+    SQLite: "🔋",
+    Firebase: "🔥",
+    Redis: "🔴",
+    Oracle: "☁️",
+    "SQL Server": "🔷",
+    DynamoDB: "📊",
+    Cassandra: "🌐",
+    Neo4j: "🕸️",
+    Supabase: "⚡",
+    CouchDB: "🛋️",
+    MariaDB: "🔵",
+    InfluxDB: "📈",
+    "Amazon RDS": "☁️",
+    "Google Cloud SQL": "☁️",
+    "Azure SQL": "☁️",
+    "Cosmos DB": "🌌",
+    Firestore: "🔥",
+    "Realm DB": "📱",
+    PouchDB: "📱",
+    IndexedDB: "🌐",
+    LocalStorage: "💾",
+    SessionStorage: "💾",
+    AsyncStorage: "📱",
+    CoreData: "🍎",
+    Room: "🤖",
+  }
+
   // Extraer bases de datos únicas de las ideas filtradas
   useEffect(() => {
     let filteredIdeas = [...projectIdeas]
@@ -49,7 +81,13 @@ export function DatabaseFilter() {
           aria-expanded={open}
           className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
         >
-          {databaseFilter ? databaseFilter : "Todas las bases de datos"}
+          {databaseFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{databaseEmojis[databaseFilter] || "💾"}</span> {databaseFilter}
+            </span>
+          ) : (
+            "Todas las bases de datos"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -79,7 +117,9 @@ export function DatabaseFilter() {
                   className="cursor-pointer font-fondamento"
                 >
                   <Check className={`mr-2 h-4 w-4 ${databaseFilter === database ? "opacity-100" : "opacity-0"}`} />
-                  {database}
+                  <span className="flex items-center">
+                    <span className="mr-2">{databaseEmojis[database] || "💾"}</span> {database}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

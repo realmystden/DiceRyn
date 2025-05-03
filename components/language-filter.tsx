@@ -13,6 +13,40 @@ export function LanguageFilter() {
   const { languageFilter, setLanguageFilter, appTypeFilter, easterEggActivated } = useProjectIdeasStore()
   const [languages, setLanguages] = useState<string[]>([])
 
+  // Language emojis mapping
+  const languageEmojis: Record<string, string> = {
+    JavaScript: "📜",
+    Python: "🐍",
+    Java: "☕",
+    "C#": "🔷",
+    PHP: "🐘",
+    Ruby: "💎",
+    Go: "🐹",
+    Rust: "🦀",
+    TypeScript: "📘",
+    Swift: "🍎",
+    Kotlin: "🤖",
+    "C++": "⚙️",
+    Brainfuck: "🧠",
+    HTML: "📄",
+    CSS: "🎨",
+    SQL: "🗃️",
+    R: "📊",
+    Dart: "🎯",
+    Lua: "🌙",
+    Perl: "🐪",
+    Scala: "📈",
+    Haskell: "λ",
+    Elixir: "💧",
+    Clojure: "🔄",
+    "F#": "🎵",
+    COBOL: "🏛️",
+    Assembly: "⚙️",
+    MATLAB: "🧮",
+    Julia: "🔬",
+    Groovy: "🎵",
+  }
+
   // Extraer todos los lenguajes de programación
   useEffect(() => {
     let filteredIdeas = [...projectIdeas]
@@ -31,6 +65,9 @@ export function LanguageFilter() {
     // Filtrar Brainfuck a menos que el easter egg esté activado
     if (!easterEggActivated) {
       uniqueLanguages = uniqueLanguages.filter((lang) => lang !== "Brainfuck")
+    } else if (!uniqueLanguages.includes("Brainfuck")) {
+      // Si el easter egg está activado y Brainfuck no está en la lista, añadirlo
+      uniqueLanguages.push("Brainfuck")
     }
 
     setLanguages(uniqueLanguages.sort())
@@ -45,7 +82,13 @@ export function LanguageFilter() {
           aria-expanded={open}
           className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
         >
-          {languageFilter ? languageFilter : "Todos los lenguajes"}
+          {languageFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{languageEmojis[languageFilter] || "💻"}</span> {languageFilter}
+            </span>
+          ) : (
+            "Todos los lenguajes"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -72,10 +115,26 @@ export function LanguageFilter() {
                     setLanguageFilter(language)
                     setOpen(false)
                   }}
-                  className={`cursor-pointer font-fondamento ${language === "Brainfuck" ? "text-purple-500 font-bold" : ""}`}
+                  className={`cursor-pointer font-fondamento ${
+                    language === "Brainfuck" ? "text-purple-500 font-bold" : ""
+                  } ${
+                    ["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"].includes(
+                      language,
+                    )
+                      ? "text-green-500"
+                      : ""
+                  }`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${languageFilter === language ? "opacity-100" : "opacity-0"}`} />
-                  {language === "Brainfuck" ? `${language} 🧠` : language}
+                  <span className="flex items-center">
+                    <span className="mr-2">{languageEmojis[language] || "💻"}</span>
+                    {language}
+                    {["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"].includes(
+                      language,
+                    )
+                      ? " ✨"
+                      : ""}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

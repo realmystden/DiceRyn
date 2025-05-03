@@ -7,19 +7,25 @@ export interface ProjectIdea {
   frameworks: string[]
   basesdedatos: string[]
   nivel: "Student" | "Trainee" | "Junior" | "Senior"
-  tipo: "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | "Videojuego"
+  tipo: "Aplicación Web" | "Aplicación Móvil" | "Aplicación de Escritorio" | "Videojuego" | "Aplicación de Consola"
 }
 
 // Importar ideas adicionales
-import { additionalProjectIdeas } from "./project-ideas-additional"
 import { gameProjectIdeas } from "./project-ideas-games"
-import { studentProjectIdeas } from "./project-ideas-student"
+import { projectIdeasStudent } from "./project-ideas-student"
+import { additionalLanguages } from "./additional-languages"
+import { additionalLanguagesFrameworks } from "./additional-languages-frameworks"
+import { brainfuckProjects } from "./project-ideas-additional"
+import { additionalLanguagesTwo } from "./additional-languages-two"
 
 // Combinar todas las ideas de proyectos
 export const projectIdeas = [
-  ...additionalProjectIdeas,
   ...gameProjectIdeas,
-  ...studentProjectIdeas,
+  ...projectIdeasStudent,
+  ...additionalLanguages,
+  ...additionalLanguagesFrameworks,
+  ...brainfuckProjects,
+  ...additionalLanguagesTwo,
   // Ideas originales
   {
     id: "1",
