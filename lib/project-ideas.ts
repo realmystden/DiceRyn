@@ -6,7 +6,7 @@ export interface ProjectIdea {
   tecnologias: string[]
   frameworks: string[]
   basesdedatos: string[]
-  nivel: "Student" | "Trainee" | "Junior" | "Senior"
+  nivel: "Student" | "Trainee" | "Junior" | "Senior" | "Master"
   tipo:
     | "Aplicación Web"
     | "Aplicación Móvil"
@@ -30,7 +30,6 @@ import { gameProjectIdeas } from "./project-ideas-games"
 import { projectIdeasStudent } from "./project-ideas-student"
 import { additionalLanguages } from "./additional-languages"
 import { additionalLanguagesFrameworks } from "./additional-languages-frameworks"
-import { brainfuckProjects } from "./project-ideas-additional"
 import { additionalLanguagesTwo } from "./additional-languages-two"
 // Import the additional project ideas
 import { additionalProjectIdeas } from "./additional-project-ideas"
@@ -68,9 +67,6 @@ export const projectIdeas = [
   ...normalizeIdeas(projectIdeasStudent || []),
   ...normalizeIdeas(additionalLanguages || []),
   ...normalizeIdeas(additionalLanguagesFrameworks || []),
-  // Filtrar los proyectos de Brainfuck según el estado del easter egg
-  // Nota: Esta línea se reemplazará dinámicamente en el cliente
-  ...normalizeIdeas(brainfuckProjects || []),
   ...normalizeIdeas(additionalLanguagesTwo || []),
   ...normalizeIdeas(additionalProjectIdeas || []),
   ...normalizeIdeas(combinationProjectIdeas || []),
@@ -678,7 +674,8 @@ export const projectIdeas = [
   },
   {
     titulo: "Sistema de Gestión de Clínicas Dentales",
-    descripcion: "Plataforma para administrar pacientes, citas, tratamientos y facturación en clínicas dentales.",
+    descripcion:
+      "Plataforma para administrar pacientes animales, tratamientos, citas y facturación en clínicas dentales.",
     categoria: "Salud",
     tecnologias: ["C#"],
     frameworks: ["ASP.NET Core", "Entity Framework"],
@@ -825,36 +822,6 @@ export const projectIdeas = [
     tecnologias: ["HTML", "CSS", "JavaScript"],
     frameworks: [],
     basesdedatos: ["LocalStorage"],
-    nivel: "Trainee",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Temporizador Pomodoro",
-    descripcion: "Aplicación para gestionar el tiempo con la técnica Pomodoro (trabajo y descansos).",
-    categoria: "Productividad",
-    tecnologias: ["HTML", "CSS", "JavaScript"],
-    frameworks: [],
-    basesdedatos: ["LocalStorage"],
-    nivel: "Trainee",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Buscador de Películas",
-    descripcion: "Aplicación para buscar información sobre películas utilizando una API pública.",
-    categoria: "Entretenimiento",
-    tecnologias: ["HTML", "CSS", "JavaScript"],
-    frameworks: [],
-    basesdedatos: [],
-    nivel: "Trainee",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Aplicación del Clima",
-    descripcion: "Aplicación que muestra el clima actual y pronóstico para una ubicación específica.",
-    categoria: "Utilidad",
-    tecnologias: ["HTML", "CSS", "JavaScript"],
-    frameworks: [],
-    basesdedatos: [],
     nivel: "Trainee",
     tipo: "Aplicación Web",
   },

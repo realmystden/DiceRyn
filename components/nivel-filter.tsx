@@ -61,7 +61,7 @@ export function NivelFilter() {
           className={`w-full md:w-[200px] justify-between fantasy-button font-fondamento ${getLevelColor(nivelFilter)}`}
         >
           {nivelFilter ? (
-            <span className="flex items-center truncate">
+            <span className="flex items-center">
               <span className="mr-2">{selectedLevel?.emoji}</span> {nivelFilter}
             </span>
           ) : (
@@ -96,10 +96,10 @@ export function NivelFilter() {
                   className={`cursor-pointer font-fondamento ${nivel.color}`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${nivelFilter === nivel.value ? "opacity-100" : "opacity-0"}`} />
-                  <div className="flex items-center truncate">
+                  <span className="flex items-center">
                     <span className="mr-2">{nivel.emoji}</span> {nivel.label}
-                    <span className="ml-2 text-xs text-gray-400 truncate">({nivel.description})</span>
-                  </div>
+                    <span className="ml-2 text-xs text-gray-400">({nivel.description})</span>
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

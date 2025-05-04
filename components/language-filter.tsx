@@ -27,7 +27,7 @@ export function LanguageFilter() {
     Swift: "🍎",
     Kotlin: "🤖",
     "C++": "⚙️",
-    Brainfuck: "🧠",
+    ...(easterEggActivated ? { Brainfuck: "🧠" } : {}),
     HTML: "📄",
     CSS: "🎨",
     SQL: "🗃️",
@@ -56,13 +56,6 @@ export function LanguageFilter() {
       filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
     }
 
-    // Filtrar ideas de Brainfuck si el easter egg no está activado
-    if (!easterEggActivated) {
-      filteredIdeas = filteredIdeas.filter(
-        (idea) => !idea.tecnologias.includes("Brainfuck") && idea.tipo !== "Programación Esotérica",
-      )
-    }
-
     // Extraer todos los lenguajes de todas las ideas
     const allLanguages = filteredIdeas.flatMap((idea) => {
       // Asegurarse de que idea.tecnologias existe y es un array
@@ -70,23 +63,12 @@ export function LanguageFilter() {
     })
 
     // Eliminar duplicados y ordenar
-    let uniqueLanguages = Array.from(new Set(allLanguages))
+    const uniqueLanguages = Array.from(new Set(allLanguages))
 
-    // Filtrar Brainfuck a menos que el easter egg esté activado
-    if (!easterEggActivated) {
-      uniqueLanguages = uniqueLanguages.filter((lang) => lang !== "Brainfuck")
-    } else if (!uniqueLanguages.includes("Brainfuck")) {
-      // Si el easter egg está activado y Brainfuck no está en la lista, añadirlo
+    // Conditionally add Brainfuck
+    if (easterEggActivated && !uniqueLanguages.includes("Brainfuck")) {
       uniqueLanguages.push("Brainfuck")
     }
-
-    // Add modern languages if they don't exist in the list
-    const modernLanguages = ["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"]
-    modernLanguages.forEach((lang) => {
-      if (!uniqueLanguages.includes(lang)) {
-        uniqueLanguages.push(lang)
-      }
-    })
 
     setLanguages(uniqueLanguages.sort())
   }, [appTypeFilter, easterEggActivated])
@@ -135,23 +117,12 @@ export function LanguageFilter() {
                   }}
                   className={`cursor-pointer font-fondamento ${
                     language === "Brainfuck" ? "text-purple-500 font-bold" : ""
-                  } ${
-                    ["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"].includes(
-                      language,
-                    )
-                      ? "text-green-500"
-                      : ""
                   }`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${languageFilter === language ? "opacity-100" : "opacity-0"}`} />
                   <span className="flex items-center">
                     <span className="mr-2">{languageEmojis[language] || "💻"}</span>
                     {language}
-                    {["Astro", "Svelte", "Deno", "Bun", "Elm", "ReScript", "SolidJS", "Qwik", "Remix", "HTMX"].includes(
-                      language,
-                    )
-                      ? " ✨"
-                      : ""}
                   </span>
                 </CommandItem>
               ))}
