@@ -35,6 +35,10 @@ import { additionalLanguagesTwo } from "./additional-languages-two"
 import { additionalProjectIdeas } from "./additional-project-ideas"
 // Import combination project ideas
 import combinationProjectIdeas from "./project-ideas-combinations"
+// Import master level project ideas
+import masterProjectIdeas from "./master-project-ideas"
+// Import Brainfuck projects
+import { brainfuckProjects } from "./project-ideas-additional"
 
 // Función para normalizar las ideas de proyectos
 const normalizeProjectIdea = (idea: any): ProjectIdea => {
@@ -60,7 +64,6 @@ const normalizeIdeas = (ideas: any[]): ProjectIdea[] => {
   return ideas.map(normalizeProjectIdea)
 }
 
-// Modificar la parte donde se combinan todas las ideas de proyectos
 // Combinar todas las ideas de proyectos
 export const projectIdeas = [
   ...normalizeIdeas(gameProjectIdeas || []),
@@ -70,6 +73,7 @@ export const projectIdeas = [
   ...normalizeIdeas(additionalLanguagesTwo || []),
   ...normalizeIdeas(additionalProjectIdeas || []),
   ...normalizeIdeas(combinationProjectIdeas || []),
+  ...normalizeIdeas(masterProjectIdeas || []),
   // Ideas originales
   {
     id: "1",
@@ -674,8 +678,7 @@ export const projectIdeas = [
   },
   {
     titulo: "Sistema de Gestión de Clínicas Dentales",
-    descripcion:
-      "Plataforma para administrar pacientes animales, tratamientos, citas y facturación en clínicas dentales.",
+    descripcion: "Plataforma para administrar pacientes, citas, tratamientos y facturación en clínicas dentales.",
     categoria: "Salud",
     tecnologias: ["C#"],
     frameworks: ["ASP.NET Core", "Entity Framework"],
@@ -825,4 +828,42 @@ export const projectIdeas = [
     nivel: "Trainee",
     tipo: "Aplicación Web",
   },
+  {
+    titulo: "Temporizador Pomodoro",
+    descripcion: "Aplicación para gestionar el tiempo con la técnica Pomodoro (trabajo y descansos).",
+    categoria: "Productividad",
+    tecnologias: ["HTML", "CSS", "JavaScript"],
+    frameworks: [],
+    basesdedatos: ["LocalStorage"],
+    nivel: "Trainee",
+    tipo: "Aplicación Web",
+  },
+  {
+    titulo: "Buscador de Películas",
+    descripcion: "Aplicación para buscar información sobre películas utilizando una API pública.",
+    categoria: "Entretenimiento",
+    tecnologias: ["HTML", "CSS", "JavaScript"],
+    frameworks: [],
+    basesdedatos: [],
+    nivel: "Trainee",
+    tipo: "Aplicación Web",
+  },
+  {
+    titulo: "Aplicación del Clima",
+    descripcion: "Aplicación que muestra el clima actual y pronóstico para una ubicación específica.",
+    categoria: "Utilidad",
+    tecnologias: ["HTML", "CSS", "JavaScript"],
+    frameworks: [],
+    basesdedatos: [],
+    nivel: "Trainee",
+    tipo: "Aplicación Web",
+  },
 ]
+
+// Function to get all project ideas, including Brainfuck projects when Easter egg is activated
+export const getAllProjectIdeas = (easterEggActivated: boolean) => {
+  if (easterEggActivated) {
+    return [...projectIdeas, ...normalizeIdeas(brainfuckProjects || [])]
+  }
+  return projectIdeas
+}

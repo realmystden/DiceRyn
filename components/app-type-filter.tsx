@@ -1,53 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Check, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useProjectIdeasStore } from "@/lib/store"
+import { projectIdeas } from "@/lib/project-ideas"
 
 export function AppTypeFilter() {
   const [open, setOpen] = useState(false)
   const { appTypeFilter, setAppTypeFilter, easterEggActivated } = useProjectIdeasStore()
-  const [appTypesState, setAppTypes] = useState<string[]>([])
+  const [appTypes, setAppTypes] = useState<string[]>([])
 
-  // App types with emojis
-  const appTypes = [
-    { value: "Aplicación Web", label: "Aplicación Web", emoji: "🌐" },
-    { value: "Aplicación Móvil", label: "Aplicación Móvil", emoji: "📱" },
-    { value: "Aplicación de Escritorio", label: "Aplicación de Escritorio", emoji: "💻" },
-    { value: "Videojuego", label: "Videojuego", emoji: "🎮" },
-    { value: "API", label: "API", emoji: "🔌" },
-    { value: "Aplicación de Consola", label: "Aplicación de Consola", emoji: "⌨️" },
-    ...(easterEggActivated ? [{ value: "Programación Esotérica", label: "Programación Esotérica", emoji: "🧠" }] : []),
-    { value: "Backend", label: "Backend", emoji: "⚙️" },
-    { value: "Frontend", label: "Frontend", emoji: "🖼️" },
-    { value: "Fullstack", label: "Fullstack", emoji: "🧰" },
-  ]
+  // Extract unique app types
+  useEffect(() => {
+    let uniqueAppTypes = Array.from(new Set(projectIdeas.map((idea) => idea.tipo))).sort()
 
-  const getAppTypeColor = (type: string | null) => {
-    switch (type) {
-      case "Aplicación Web":
-        return "text-blue-400"
-      case "Aplicación Móvil":
-        return "text-green-400"
-      case "Aplicación de Escritorio":
-        return "text-purple-400"
-      case "API":
-        return "text-yellow-400"
-      case "Videojuego":
-        return "text-red-400"
-      case "Aplicación de Consola":
-        return "text-cyan-400"
-      case "Programación Esotérica":
-        return "text-purple-500"
-      default:
-        return "text-white"
+    // Filter out "Programación Esotérica" if Easter egg is not activated
+    if (!easterEggActivated) {
+      uniqueAppTypes = uniqueAppTypes.filter((type) => type !== "Programación Esotérica")
     }
-  }
 
-  const selectedType = appTypes.find((type) => type.value === appTypeFilter)
+    setAppTypes(uniqueAppTypes)
+  }, [easterEggActivated])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -56,47 +32,39 @@ export function AppTypeFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={`w-full md:w-[200px] justify-between fantasy-button font-fondamento ${getAppTypeColor(appTypeFilter)}`}
+          className="w-full md:w-[200px] justify-between fantasy-button"
         >
-          {appTypeFilter ? (
-            <span className="flex items-center">
-              <span className="mr-2">{selectedType?.emoji}</span> {appTypeFilter}
-            </span>
-          ) : (
-            "Todos los tipos"
-          )}
+          {appTypeFilter ? appTypeFilter : "Todos los tipos"}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full md:w-[200px] p-0 fantasy-card">
-        <Command className="font-fondamento">
-          <CommandInput placeholder="Buscar tipo..." className="font-fondamento text-white" />
-          <CommandList className="font-fondamento">
-            <CommandEmpty className="text-white">No se encontraron tipos.</CommandEmpty>
+        <Command>
+          <CommandInput placeholder="Buscar tipo..." className="font-fondamento" />
+          <CommandList>
+            <CommandEmpty>No se encontraron tipos.</CommandEmpty>
             <CommandGroup>
               <CommandItem
                 onSelect={() => {
                   setAppTypeFilter(null)
                   setOpen(false)
                 }}
-                className="cursor-pointer font-fondamento text-white hover:bg-gray-800"
+                className="cursor-pointer font-fondamento"
               >
                 <Check className={`mr-2 h-4 w-4 ${!appTypeFilter ? "opacity-100" : "opacity-0"}`} />
                 Todos los tipos
               </CommandItem>
               {appTypes.map((type) => (
                 <CommandItem
-                  key={type.value}
+                  key={type}
                   onSelect={() => {
-                    setAppTypeFilter(type.value)
+                    setAppTypeFilter(type)
                     setOpen(false)
                   }}
-                  className={`cursor-pointer font-fondamento hover:bg-gray-800 ${getAppTypeColor(type.value)}`}
+                  className="cursor-pointer font-fondamento"
                 >
-                  <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type.value ? "opacity-100" : "opacity-0"}`} />
-                  <span className="flex items-center">
-                    <span className="mr-2">{type.emoji}</span> {type.label}
-                  </span>
+                  <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type ? "opacity-100" : "opacity-0"}`} />
+                  {type}
                 </CommandItem>
               ))}
             </CommandGroup>

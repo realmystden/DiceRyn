@@ -9,10 +9,10 @@ import { useProjectIdeasStore } from "@/lib/store"
 
 export function NivelFilter() {
   const [open, setOpen] = useState(false)
-  const { nivelFilter, setNivelFilter } = useProjectIdeasStore()
+  const { nivelFilter, setNivelFilter, easterEggActivated } = useProjectIdeasStore()
 
   // Niveles disponibles con emojis
-  const niveles = [
+  const standardLevels = [
     {
       value: "Student",
       label: "Student",
@@ -29,8 +29,18 @@ export function NivelFilter() {
     },
     { value: "Junior", label: "Junior", emoji: "🚀", color: "text-yellow-400", description: "Proyectos intermedios" },
     { value: "Senior", label: "Senior", emoji: "⭐", color: "text-orange-400", description: "Proyectos avanzados" },
-    { value: "Master", label: "Master", emoji: "👑", color: "text-red-400", description: "Proyectos expertos" },
   ]
+
+  const masterLevel = {
+    value: "Master",
+    label: "Master",
+    emoji: "👑",
+    color: "text-red-400",
+    description: "Proyectos expertos",
+  }
+
+  // Add Master level only if Easter egg is activated
+  const niveles = easterEggActivated ? [...standardLevels, masterLevel] : standardLevels
 
   const getLevelColor = (level: string | null) => {
     switch (level) {
@@ -90,7 +100,7 @@ export function NivelFilter() {
                 <CommandItem
                   key={nivel.value}
                   onSelect={() => {
-                    setNivelFilter(nivel.value as "Student" | "Trainee" | "Junior" | "Senior")
+                    setNivelFilter(nivel.value as "Student" | "Trainee" | "Junior" | "Senior" | "Master")
                     setOpen(false)
                   }}
                   className={`cursor-pointer font-fondamento ${nivel.color}`}

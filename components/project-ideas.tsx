@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useProjectIdeasStore } from "@/lib/store"
-import { projectIdeas } from "@/lib/project-ideas"
+import { getAllProjectIdeas } from "@/lib/project-ideas"
 import { Button } from "@/components/ui/button"
 
 interface ProjectIdeasProps {
@@ -24,6 +24,7 @@ export function ProjectIdeas({ selectedIdeaOverride }: ProjectIdeasProps) {
     nivelFilter,
     markProjectAsCompleted,
     isProjectCompleted,
+    easterEggActivated,
   } = useProjectIdeasStore()
 
   // Usar el override si está disponible, de lo contrario usar el valor del store
@@ -64,11 +65,13 @@ export function ProjectIdeas({ selectedIdeaOverride }: ProjectIdeasProps) {
     return null
   }
 
+  const allIdeas = getAllProjectIdeas(easterEggActivated)
+
   // Asegurar que el índice de la idea seleccionada es válido
   const ideaIndex = selectedIdea !== null ? selectedIdea - 1 : 0
   const idea =
-    ideaIndex >= 0 && ideaIndex < projectIdeas.length
-      ? projectIdeas[ideaIndex]
+    ideaIndex >= 0 && ideaIndex < allIdeas.length
+      ? allIdeas[ideaIndex]
       : {
           titulo: "Idea no encontrada",
           descripcion: "Lo sentimos, no pudimos encontrar esta idea. Por favor, intenta lanzar el dado nuevamente.",

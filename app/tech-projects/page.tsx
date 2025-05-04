@@ -13,7 +13,8 @@ import { NivelFilter } from "@/components/nivel-filter"
 import { SortOptions } from "@/components/sort-options"
 import { NoResultsMessage } from "@/components/no-results-message"
 import { useProjectIdeasStore } from "@/lib/store"
-import { projectIdeas } from "@/lib/project-ideas"
+// Update the imports to include getAllProjectIdeas
+import { getAllProjectIdeas } from "@/lib/project-ideas"
 import { AnimatedSection } from "@/components/animated-section"
 
 // Importar TechDice de forma dinámica para evitar problemas de SSR
@@ -111,6 +112,7 @@ export default function TechProjects() {
   const [isRolling, setIsRolling] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null)
+  const [easterEggActivated, setEasterEggActivated] = useState(false)
 
   const {
     appTypeFilter,
@@ -130,10 +132,12 @@ export default function TechProjects() {
   }, [])
 
   // Verificar si hay resultados con los filtros actuales
+  // Replace the useEffect that checks for noResults with this updated version
   useEffect(() => {
     if (!mounted) return
 
-    let filteredIdeas = [...projectIdeas]
+    const allIdeas = getAllProjectIdeas(easterEggActivated)
+    let filteredIdeas = [...allIdeas]
 
     // Aplicar filtros con comprobaciones de seguridad
     if (appTypeFilter) {
@@ -173,16 +177,18 @@ export default function TechProjects() {
 
     // Actualizar estado de noResults
     setNoResults(filteredIdeas.length === 0)
-  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, mounted])
+  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, mounted, easterEggActivated])
 
+  // Also update the handleRollComplete function to use getAllProjectIdeas
   const handleRollComplete = (result: string) => {
     if (noResults) {
       // No hacer nada si no hay resultados
       return
     }
 
+    const allIdeas = getAllProjectIdeas(easterEggActivated)
     // Filtrar ideas según los criterios seleccionados con comprobaciones de seguridad
-    let filteredIdeas = [...projectIdeas]
+    let filteredIdeas = [...allIdeas]
 
     if (appTypeFilter) {
       filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
@@ -212,12 +218,12 @@ export default function TechProjects() {
 
     // Si no hay ideas con los filtros aplicados, usar todas las ideas
     if (filteredIdeas.length === 0) {
-      filteredIdeas = projectIdeas
+      filteredIdeas = allIdeas
     }
 
     // Seleccionar idea aleatoria de las filtradas
     const randomIndex = Math.floor(Math.random() * filteredIdeas.length)
-    const selectedIdeaIndex = projectIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
+    const selectedIdeaIndex = allIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
 
     // Usar el estado local en lugar del store
     setSelectedIdeaIndex(selectedIdeaIndex + 1)

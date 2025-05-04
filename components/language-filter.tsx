@@ -13,64 +13,18 @@ export function LanguageFilter() {
   const { languageFilter, setLanguageFilter, appTypeFilter, easterEggActivated } = useProjectIdeasStore()
   const [languages, setLanguages] = useState<string[]>([])
 
-  // Language emojis mapping
-  const languageEmojis: Record<string, string> = {
-    JavaScript: "📜",
-    Python: "🐍",
-    Java: "☕",
-    "C#": "🔷",
-    PHP: "🐘",
-    Ruby: "💎",
-    Go: "🐹",
-    Rust: "🦀",
-    TypeScript: "📘",
-    Swift: "🍎",
-    Kotlin: "🤖",
-    "C++": "⚙️",
-    ...(easterEggActivated ? { Brainfuck: "🧠" } : {}),
-    HTML: "📄",
-    CSS: "🎨",
-    SQL: "🗃️",
-    R: "📊",
-    Dart: "🎯",
-    Lua: "🌙",
-    Perl: "🐪",
-    Scala: "📈",
-    Haskell: "λ",
-    Elixir: "💧",
-    Clojure: "🔄",
-    "F#": "🎵",
-    COBOL: "🏛️",
-    Assembly: "⚙️",
-    MATLAB: "🧮",
-    Julia: "🔬",
-    Groovy: "🎵",
-  }
-
-  // Extraer todos los lenguajes de programación
+  // Extract unique languages from filtered ideas
   useEffect(() => {
-    let filteredIdeas = [...projectIdeas]
+    const filteredIdeas = appTypeFilter ? projectIdeas.filter((idea) => idea.tipo === appTypeFilter) : projectIdeas
 
-    // Aplicar filtro de tipo de aplicación si existe
-    if (appTypeFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
+    let uniqueLanguages = Array.from(new Set(filteredIdeas.flatMap((idea) => idea.tecnologias).filter(Boolean))).sort()
+
+    // Filter out Brainfuck if Easter egg is not activated
+    if (!easterEggActivated) {
+      uniqueLanguages = uniqueLanguages.filter((lang) => lang !== "Brainfuck")
     }
 
-    // Extraer todos los lenguajes de todas las ideas
-    const allLanguages = filteredIdeas.flatMap((idea) => {
-      // Asegurarse de que idea.tecnologias existe y es un array
-      return Array.isArray(idea.tecnologias) ? idea.tecnologias : []
-    })
-
-    // Eliminar duplicados y ordenar
-    const uniqueLanguages = Array.from(new Set(allLanguages))
-
-    // Conditionally add Brainfuck
-    if (easterEggActivated && !uniqueLanguages.includes("Brainfuck")) {
-      uniqueLanguages.push("Brainfuck")
-    }
-
-    setLanguages(uniqueLanguages.sort())
+    setLanguages(uniqueLanguages)
   }, [appTypeFilter, easterEggActivated])
 
   return (
@@ -80,24 +34,18 @@ export function LanguageFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
+          className="w-full md:w-[200px] justify-between fantasy-button"
         >
-          {languageFilter ? (
-            <span className="flex items-center">
-              <span className="mr-2">{languageEmojis[languageFilter] || "💻"}</span> {languageFilter}
-            </span>
-          ) : (
-            "Todos los lenguajes"
-          )}
+          {languageFilter ? languageFilter : "Todos los lenguajes"}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full md:w-[200px] p-0 fantasy-card">
-        <Command className="font-fondamento">
+        <Command>
           <CommandInput placeholder="Buscar lenguaje..." className="font-fondamento" />
-          <CommandList className="font-fondamento max-h-[300px]">
-            <CommandEmpty className="font-fondamento">No se encontraron lenguajes.</CommandEmpty>
-            <CommandGroup className="font-fondamento">
+          <CommandList>
+            <CommandEmpty>No se encontraron lenguajes.</CommandEmpty>
+            <CommandGroup>
               <CommandItem
                 onSelect={() => {
                   setLanguageFilter(null)
@@ -115,15 +63,10 @@ export function LanguageFilter() {
                     setLanguageFilter(language)
                     setOpen(false)
                   }}
-                  className={`cursor-pointer font-fondamento ${
-                    language === "Brainfuck" ? "text-purple-500 font-bold" : ""
-                  }`}
+                  className="cursor-pointer font-fondamento"
                 >
                   <Check className={`mr-2 h-4 w-4 ${languageFilter === language ? "opacity-100" : "opacity-0"}`} />
-                  <span className="flex items-center">
-                    <span className="mr-2">{languageEmojis[language] || "💻"}</span>
-                    {language}
-                  </span>
+                  {language}
                 </CommandItem>
               ))}
             </CommandGroup>
