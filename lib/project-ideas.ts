@@ -34,6 +34,8 @@ import { brainfuckProjects } from "./project-ideas-additional"
 import { additionalLanguagesTwo } from "./additional-languages-two"
 // Import the additional project ideas
 import { additionalProjectIdeas } from "./additional-project-ideas"
+// Import combination project ideas
+import combinationProjectIdeas from "./project-ideas-combinations"
 
 // Función para normalizar las ideas de proyectos
 const normalizeProjectIdea = (idea: any): ProjectIdea => {
@@ -59,15 +61,19 @@ const normalizeIdeas = (ideas: any[]): ProjectIdea[] => {
   return ideas.map(normalizeProjectIdea)
 }
 
+// Modificar la parte donde se combinan todas las ideas de proyectos
 // Combinar todas las ideas de proyectos
 export const projectIdeas = [
   ...normalizeIdeas(gameProjectIdeas || []),
   ...normalizeIdeas(projectIdeasStudent || []),
   ...normalizeIdeas(additionalLanguages || []),
   ...normalizeIdeas(additionalLanguagesFrameworks || []),
+  // Filtrar los proyectos de Brainfuck según el estado del easter egg
+  // Nota: Esta línea se reemplazará dinámicamente en el cliente
   ...normalizeIdeas(brainfuckProjects || []),
   ...normalizeIdeas(additionalLanguagesTwo || []),
   ...normalizeIdeas(additionalProjectIdeas || []),
+  ...normalizeIdeas(combinationProjectIdeas || []),
   // Ideas originales
   {
     id: "1",

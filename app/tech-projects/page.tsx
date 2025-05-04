@@ -13,7 +13,7 @@ import { NivelFilter } from "@/components/nivel-filter"
 import { SortOptions } from "@/components/sort-options"
 import { NoResultsMessage } from "@/components/no-results-message"
 import { useProjectIdeasStore } from "@/lib/store"
-import { projectIdeas } from "@/lib/project-ideas"
+import { useFilteredProjectIdeas } from "@/components/filtered-project-ideas"
 import { AnimatedSection } from "@/components/animated-section"
 
 // Importar TechDice de forma dinámica para evitar problemas de SSR
@@ -111,6 +111,7 @@ export default function TechProjects() {
   const [isRolling, setIsRolling] = useState(false)
   const [noResults, setNoResults] = useState(false)
   const [selectedIdeaIndex, setSelectedIdeaIndex] = useState<number | null>(null)
+  const [searchInput, setSearchInput] = useState("")
 
   const {
     appTypeFilter,
@@ -125,6 +126,8 @@ export default function TechProjects() {
     setNivelFilter,
   } = useProjectIdeasStore()
 
+  const filteredIdeas = useFilteredProjectIdeas()
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -133,47 +136,60 @@ export default function TechProjects() {
   useEffect(() => {
     if (!mounted) return
 
-    let filteredIdeas = [...projectIdeas]
+    let ideas = [...filteredIdeas]
 
     // Aplicar filtros con comprobaciones de seguridad
     if (appTypeFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         // Asegurarse de que idea.tipo existe antes de usar includes
         return idea.tipo === appTypeFilter
       })
     }
 
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         // Asegurarse de que idea.tecnologias existe y es un array antes de usar includes
         return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
       })
     }
 
     if (frameworkFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         // Asegurarse de que idea.frameworks existe y es un array antes de usar includes
         return Array.isArray(idea.frameworks) && idea.frameworks.includes(frameworkFilter)
       })
     }
 
     if (databaseFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         // Asegurarse de que idea.basesdedatos existe y es un array antes de usar includes
         return Array.isArray(idea.basesdedatos) && idea.basesdedatos.includes(databaseFilter)
       })
     }
 
     if (nivelFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         // Asegurarse de que idea.nivel existe antes de comparar
         return idea.nivel === nivelFilter
       })
     }
 
+    // Filtrar por término de búsqueda
+    if (searchInput.trim() !== "") {
+      const searchTerm = searchInput.toLowerCase()
+      ideas = ideas.filter(
+        (idea) =>
+          idea.titulo.toLowerCase().includes(searchTerm) ||
+          idea.descripcion.toLowerCase().includes(searchTerm) ||
+          (idea.tecnologias && idea.tecnologias.some((tech) => tech.toLowerCase().includes(searchTerm))) ||
+          (idea.frameworks && idea.frameworks.some((framework) => framework.toLowerCase().includes(searchTerm))) ||
+          (idea.basesdedatos && idea.basesdedatos.some((db) => db.toLowerCase().includes(searchTerm))),
+      )
+    }
+
     // Actualizar estado de noResults
-    setNoResults(filteredIdeas.length === 0)
-  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, mounted])
+    setNoResults(ideas.length === 0)
+  }, [appTypeFilter, languageFilter, frameworkFilter, databaseFilter, nivelFilter, searchInput, mounted, filteredIdeas])
 
   const handleRollComplete = (result: string) => {
     if (noResults) {
@@ -182,42 +198,55 @@ export default function TechProjects() {
     }
 
     // Filtrar ideas según los criterios seleccionados con comprobaciones de seguridad
-    let filteredIdeas = [...projectIdeas]
+    let ideas = [...filteredIdeas]
 
     if (appTypeFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
+      ideas = ideas.filter((idea) => idea.tipo === appTypeFilter)
     }
 
     if (languageFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         return Array.isArray(idea.tecnologias) && idea.tecnologias.includes(languageFilter)
       })
     }
 
     if (frameworkFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         return Array.isArray(idea.frameworks) && idea.frameworks.includes(frameworkFilter)
       })
     }
 
     if (databaseFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => {
+      ideas = ideas.filter((idea) => {
         return Array.isArray(idea.basesdedatos) && idea.basesdedatos.includes(databaseFilter)
       })
     }
 
     if (nivelFilter) {
-      filteredIdeas = filteredIdeas.filter((idea) => idea.nivel === nivelFilter)
+      ideas = ideas.filter((idea) => idea.nivel === nivelFilter)
+    }
+
+    // Filtrar por término de búsqueda
+    if (searchInput.trim() !== "") {
+      const searchTerm = searchInput.toLowerCase()
+      ideas = ideas.filter(
+        (idea) =>
+          idea.titulo.toLowerCase().includes(searchTerm) ||
+          idea.descripcion.toLowerCase().includes(searchTerm) ||
+          (idea.tecnologias && idea.tecnologias.some((tech) => tech.toLowerCase().includes(searchTerm))) ||
+          (idea.frameworks && idea.frameworks.some((framework) => framework.toLowerCase().includes(searchTerm))) ||
+          (idea.basesdedatos && idea.basesdedatos.some((db) => db.toLowerCase().includes(searchTerm))),
+      )
     }
 
     // Si no hay ideas con los filtros aplicados, usar todas las ideas
-    if (filteredIdeas.length === 0) {
-      filteredIdeas = projectIdeas
+    if (ideas.length === 0) {
+      ideas = filteredIdeas
     }
 
     // Seleccionar idea aleatoria de las filtradas
-    const randomIndex = Math.floor(Math.random() * filteredIdeas.length)
-    const selectedIdeaIndex = projectIdeas.findIndex((idea) => idea.titulo === filteredIdeas[randomIndex].titulo)
+    const randomIndex = Math.floor(Math.random() * ideas.length)
+    const selectedIdeaIndex = filteredIdeas.findIndex((idea) => idea.titulo === ideas[randomIndex].titulo)
 
     // Usar el estado local en lugar del store
     setSelectedIdeaIndex(selectedIdeaIndex + 1)
@@ -229,6 +258,7 @@ export default function TechProjects() {
     setFrameworkFilter(null)
     setDatabaseFilter(null)
     setNivelFilter(null)
+    setSearchInput("")
   }
 
   // Función para obtener el color según el nivel
@@ -328,6 +358,17 @@ export default function TechProjects() {
       <AnimatedSection className="w-full fantasy-card p-4 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
           <h2 className="text-xl font-cinzel text-white">Filtros y Opciones</h2>
+
+          {/* Buscador */}
+          <div className="relative w-full md:w-64">
+            <input
+              type="text"
+              placeholder="Buscar ideas..."
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

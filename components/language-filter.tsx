@@ -56,6 +56,13 @@ export function LanguageFilter() {
       filteredIdeas = filteredIdeas.filter((idea) => idea.tipo === appTypeFilter)
     }
 
+    // Filtrar ideas de Brainfuck si el easter egg no está activado
+    if (!easterEggActivated) {
+      filteredIdeas = filteredIdeas.filter(
+        (idea) => !idea.tecnologias.includes("Brainfuck") && idea.tipo !== "Programación Esotérica",
+      )
+    }
+
     // Extraer todos los lenguajes de todas las ideas
     const allLanguages = filteredIdeas.flatMap((idea) => {
       // Asegurarse de que idea.tecnologias existe y es un array

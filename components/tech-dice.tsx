@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Environment } from "@react-three/drei"
 import { BaseDice } from "./base-dice"
+// Importar el hook personalizado
+import { useFilteredProjectIdeas } from "@/components/project-ideas-filter"
 
 // Resultados posibles para el dado de tecnología
 const techResults = [
@@ -47,6 +49,9 @@ export default function TechDice({
   spinSpeed = 1,
 }: TechDiceProps) {
   const [mounted, setMounted] = useState(false)
+  // Dentro del componente, reemplazar la referencia a projectIdeas
+  // Buscar donde se usa projectIdeas y reemplazarlo con filteredIdeas
+  const filteredIdeas = useFilteredProjectIdeas()
 
   useEffect(() => {
     setMounted(true)
@@ -76,7 +81,7 @@ export default function TechDice({
           isRolling={isRolling}
           setIsRolling={setIsRolling}
           onRollComplete={onRollComplete}
-          results={techResults}
+          results={filteredIdeas.length > 0 ? filteredIdeas : techResults}
           continuousSpin={continuousSpin}
           spinSpeed={spinSpeed}
         />
