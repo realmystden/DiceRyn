@@ -1,144 +1,127 @@
 import { createClientSupabaseClient } from "./supabase/client"
-import { useProjectIdeasStore } from "./store"
+import { useStore } from "./store"
 
+// Función para sincronizar datos locales con Supabase
 export async function syncDataWithSupabase(userId: string) {
   const supabase = createClientSupabaseClient()
-  const store = useProjectIdeasStore.getState()
+  const store = useStore.getState()
 
   try {
     // Sincronizar proyectos completados
-    await syncCompletedProjects(userId, store.completedProjects, supabase)
+    const completedProjects = store.completedProjects || []
 
-    // Sincronizar logros desbloqueados
-    await syncAchievements(
-      userId,
-      store.achievements.filter((a) => a.completed),
-      supabase,
-    )
+    for (const project of completedProjects) {
+      // Verificar si el proyecto ya existe en Supabase
+      const { data: existingProject } = await supabase
+        .from("completed_projects")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("project_id", project.id)
+        .single()
 
-    return true
+      if (!existingProject) {
+        // Si no existe, insertarlo
+        await supabase.from("completed_projects").insert({
+          user_id: userId,
+          project_id: project.id,
+          title: project.title,
+          level: project.level,
+          technologies: project.technologies || [],
+          frameworks: project.frameworks || [],
+          databases: project.databases || [],
+        })
+      }
+    }
+
+    // Sincronizar logros
+    const achievements = store.unlockedAchievements || []
+
+    for (const achievementId of achievements) {
+      // Verificar si el logro ya existe en Supabase
+      const { data: existingAchievement } = await supabase
+        .from("achievements")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("achievement_id", achievementId)
+        .single()
+
+      if (!existingAchievement) {
+        // Si no existe, insertarlo
+        await supabase.from("achievements").insert({
+          user_id: userId,
+          achievement_id: achievementId,
+        })
+      }
+    }
+
+    // Sincronizar insignias
+    const badges = store.unlockedBadges || []
+
+    for (const badgeId of badges) {
+      // Verificar si la insignia ya existe en Supabase
+      const { data: existingBadge } = await supabase
+        .from("badges")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("badge_id", badgeId)
+        .single()
+
+      if (!existingBadge) {
+        // Si no existe, insertarla
+        await supabase.from("badges").insert({
+          user_id: userId,
+          badge_id: badgeId,
+        })
+      }
+    }
+
+    console.log("Datos sincronizados con Supabase correctamente")
   } catch (error) {
-    console.error("Error syncing data with Supabase:", error)
-    return false
+    console.error("Error al sincronizar datos con Supabase:", error)
   }
 }
 
-async function syncCompletedProjects(userId: string, completedProjects: any[], supabase: any) {
-  // Obtener proyectos completados de Supabase
-  const { data: existingProjects, error } = await supabase
-    .from("completed_projects")
-    .select("project_id")
-    .eq("user_id", userId)
-
-  if (error) throw error
-
-  // Crear un conjunto de IDs de proyectos existentes
-  const existingProjectIds = new Set(existingProjects.map((p: any) => p.project_id))
-
-  // Filtrar proyectos que no existen en Supabase
-  const projectsToInsert = completedProjects.filter((p) => !existingProjectIds.has(p.id))
-
-  // Insertar nuevos proyectos
-  if (projectsToInsert.length > 0) {
-    const { error: insertError } = await supabase.from("completed_projects").insert(
-      projectsToInsert.map((p) => ({
-        user_id: userId,
-        project_id: p.id,
-        completed_at: new Date(p.completedAt).toISOString(),
-        title: p.title,
-        level: p.level,
-        technologies: p.technologies,
-        frameworks: p.frameworks,
-        databases: p.databases,
-      })),
-    )
-
-    if (insertError) throw insertError
-  }
-}
-
-async function syncAchievements(userId: string, achievements: any[], supabase: any) {
-  // Obtener logros desbloqueados de Supabase
-  const { data: existingAchievements, error } = await supabase
-    .from("achievements")
-    .select("achievement_id")
-    .eq("user_id", userId)
-
-  if (error) throw error
-
-  // Crear un conjunto de IDs de logros existentes
-  const existingAchievementIds = new Set(existingAchievements.map((a: any) => a.achievement_id))
-
-  // Filtrar logros que no existen en Supabase
-  const achievementsToInsert = achievements.filter((a) => !existingAchievementIds.has(a.id))
-
-  // Insertar nuevos logros
-  if (achievementsToInsert.length > 0) {
-    const { error: insertError } = await supabase.from("achievements").insert(
-      achievementsToInsert.map((a) => ({
-        user_id: userId,
-        achievement_id: a.id,
-        unlocked_at: new Date().toISOString(),
-      })),
-    )
-
-    if (insertError) throw insertError
-  }
-}
-
+// Función para cargar datos del usuario desde Supabase
 export async function loadUserDataFromSupabase(userId: string) {
   const supabase = createClientSupabaseClient()
-  const store = useProjectIdeasStore.getState()
+  const store = useStore.getState()
 
   try {
     // Cargar proyectos completados
-    const { data: completedProjects, error: projectsError } = await supabase
-      .from("completed_projects")
-      .select("*")
-      .eq("user_id", userId)
+    const { data: completedProjects } = await supabase.from("completed_projects").select("*").eq("user_id", userId)
 
-    if (projectsError) throw projectsError
-
-    // Cargar logros desbloqueados
-    const { data: achievements, error: achievementsError } = await supabase
-      .from("achievements")
-      .select("*")
-      .eq("user_id", userId)
-
-    if (achievementsError) throw achievementsError
-
-    // Actualizar el store con los datos cargados
     if (completedProjects && completedProjects.length > 0) {
-      const formattedProjects = completedProjects.map((p) => ({
-        id: p.project_id,
-        completedAt: new Date(p.completed_at).getTime(),
-        title: p.title,
-        level: p.level,
-        technologies: p.technologies,
-        frameworks: p.frameworks,
-        databases: p.databases,
+      const formattedProjects = completedProjects.map((project) => ({
+        id: project.project_id,
+        title: project.title,
+        level: project.level,
+        technologies: project.technologies,
+        frameworks: project.frameworks,
+        databases: project.databases,
+        completedAt: new Date(project.completed_at),
       }))
 
-      // Actualizar el store con los proyectos cargados
-      store.completedProjects = formattedProjects
+      store.setCompletedProjects(formattedProjects)
     }
+
+    // Cargar logros
+    const { data: achievements } = await supabase.from("achievements").select("*").eq("user_id", userId)
 
     if (achievements && achievements.length > 0) {
-      // Actualizar el estado de los logros en el store
-      const updatedAchievements = store.achievements.map((a) => {
-        const found = achievements.find((sa) => sa.achievement_id === a.id)
-        if (found) {
-          return { ...a, completed: true }
-        }
-        return a
-      })
-
-      store.achievements = updatedAchievements
+      const achievementIds = achievements.map((achievement) => achievement.achievement_id)
+      store.setUnlockedAchievements(achievementIds)
     }
 
-    return true
+    // Cargar insignias
+    const { data: badges } = await supabase.from("badges").select("*").eq("user_id", userId)
+
+    if (badges && badges.length > 0) {
+      const badgeIds = badges.map((badge) => badge.badge_id)
+      store.setUnlockedBadges(badgeIds)
+    }
+
+    console.log("Datos cargados desde Supabase correctamente")
   } catch (error) {
-    console.error("Error loading data from Supabase:", error)
-    return false
+    console.error("Error al cargar datos desde Supabase:", error)
   }
 }

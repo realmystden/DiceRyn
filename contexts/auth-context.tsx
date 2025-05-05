@@ -20,6 +20,8 @@ type AuthContextType = {
   signOut: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithGithub: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -187,6 +189,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Correo enviado",
+        description: "Revisa tu bandeja de entrada para restablecer tu contraseña",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error al enviar el correo",
+        description: error.message,
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const updatePassword = async (password: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Contraseña actualizada",
+        description: "Tu contraseña ha sido actualizada correctamente",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error al actualizar la contraseña",
+        description: error.message,
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
   const value = {
     user,
     session,
@@ -196,6 +246,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     signInWithGoogle,
     signInWithGithub,
+    resetPassword,
+    updatePassword,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
