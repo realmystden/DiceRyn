@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useProjectIdeasStore, type AchievementLevel } from "@/lib/store"
 import { Progress } from "@/components/ui/progress"
 
 export function AchievementsList() {
   const [filter, setFilter] = useState<AchievementLevel | "all">("all")
+  const [mounted, setMounted] = useState(false)
   const {
     achievements,
     getCompletedProjectsByLevel,
@@ -21,12 +22,28 @@ export function AchievementsList() {
     getProjectsCompletedSameDay,
     getProjectsByTimeOfDay,
     getProjectsByDayType,
+    easterEggActivated,
+    checkAndUnlockAchievements,
   } = useProjectIdeasStore()
 
-  // Filtrar logros por nivel y estado de desbloqueo
-  const filteredAchievements = achievements.filter((achievement) => filter === "all" || achievement.level === filter)
+  useEffect(() => {
+    setMounted(true)
+    // Check for achievements that might be unlocked
+    checkAndUnlockAchievements()
+  }, [checkAndUnlockAchievements])
 
-  // Ordenar logros: primero los desbloqueados, luego por nivel
+  // Filter achievements by level and unlock status
+  const filteredAchievements = achievements.filter((achievement) => {
+    // Only show Master level achievements if Easter egg is activated
+    if (achievement.level === "Master" && !easterEggActivated) {
+      return false
+    }
+
+    // Filter by selected level
+    return filter === "all" || achievement.level === filter
+  })
+
+  // Sort achievements: first unlocked, then by level
   const sortedAchievements = [...filteredAchievements].sort((a, b) => {
     if (a.completed !== b.completed) {
       return a.completed ? -1 : 1
@@ -125,6 +142,8 @@ export function AchievementsList() {
     return Math.min(Math.floor((current / required) * 100), 99) // Cap at 99% if not completed
   }
 
+  if (!mounted) return null
+
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -168,14 +187,16 @@ export function AchievementsList() {
         >
           Senior
         </button>
-        <button
-          onClick={() => setFilter("Master")}
-          className={`px-3 py-1 rounded-full text-sm font-fondamento transition-colors ${
-            filter === "Master" ? "bg-amber-500 text-white" : "bg-amber-900/30 text-amber-300 hover:bg-amber-800/50"
-          }`}
-        >
-          Master
-        </button>
+        {easterEggActivated && (
+          <button
+            onClick={() => setFilter("Master")}
+            className={`px-3 py-1 rounded-full text-sm font-fondamento transition-colors ${
+              filter === "Master" ? "bg-amber-500 text-white" : "bg-amber-900/30 text-amber-300 hover:bg-amber-800/50"
+            }`}
+          >
+            Master
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,6 +260,12 @@ export function AchievementsList() {
             </motion.div>
           )
         })}
+
+        {sortedAchievements.length === 0 && (
+          <div className="col-span-2 text-center py-8">
+            <p className="text-gray-400 font-fondamento">No hay logros disponibles para los filtros seleccionados.</p>
+          </div>
+        )}
       </div>
     </div>
   )

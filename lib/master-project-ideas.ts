@@ -5,513 +5,420 @@ const masterProjectIdeas: ProjectIdea[] = [
   {
     titulo: "Sistema Distribuido de Alta Disponibilidad",
     descripcion:
-      "Implementa un sistema distribuido con tolerancia a fallos, replicación de datos y balanceo de carga utilizando arquitectura de microservicios.",
-    categoria: "Arquitectura de Sistemas",
+      "Implementa un sistema distribuido con tolerancia a fallos, replicación de datos y balanceo de carga que pueda escalar horizontalmente para manejar millones de solicitudes por segundo.",
+    categoria: "Sistemas Distribuidos",
     tecnologias: ["Go", "Rust", "Java"],
     frameworks: ["gRPC", "Kubernetes", "Istio"],
-    basesdedatos: ["CockroachDB", "Cassandra"],
+    basesdedatos: ["Cassandra", "CockroachDB"],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
   {
-    titulo: "Motor de Base de Datos Personalizado",
+    titulo: "Motor de Procesamiento de Eventos en Tiempo Real",
     descripcion:
-      "Desarrolla un motor de base de datos optimizado para un caso de uso específico, con soporte para transacciones ACID, índices avanzados y consultas distribuidas.",
-    categoria: "Bases de Datos",
-    tecnologias: ["C++", "Rust"],
-    frameworks: [],
+      "Desarrolla un motor de procesamiento de eventos que pueda ingerir, procesar y analizar millones de eventos por segundo con latencia submilisegundo y garantías de entrega exactamente una vez.",
+    categoria: "Procesamiento de Datos",
+    tecnologias: ["Scala", "Java", "Rust"],
+    frameworks: ["Akka", "Kafka Streams", "Flink"],
+    basesdedatos: ["Kafka", "Redis", "TimescaleDB"],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Sistema de Almacenamiento Distribuido",
+    descripcion:
+      "Crea un sistema de almacenamiento distribuido con particionamiento de datos, replicación y consistencia ajustable que pueda escalar a petabytes de datos.",
+    categoria: "Almacenamiento",
+    tecnologias: ["C++", "Rust", "Go"],
+    frameworks: ["RAFT", "Paxos"],
     basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Compilador de Lenguaje de Programación",
-    descripcion:
-      "Diseña e implementa un compilador completo para un lenguaje de programación personalizado, incluyendo análisis léxico, sintáctico, semántico y generación de código.",
-    categoria: "Compiladores",
-    tecnologias: ["C++", "OCaml", "Haskell"],
-    frameworks: ["LLVM"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Sistema de Procesamiento de Big Data en Tiempo Real",
-    descripcion:
-      "Crea un sistema para procesar y analizar grandes volúmenes de datos en tiempo real con baja latencia y alta disponibilidad.",
-    categoria: "Big Data",
-    tecnologias: ["Scala", "Java"],
-    frameworks: ["Apache Spark", "Apache Kafka", "Apache Flink"],
-    basesdedatos: ["Apache Cassandra", "InfluxDB"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
 
-  // AI/ML Advanced
+  // AI/ML
+  {
+    titulo: "Motor de Recomendación Personalizado",
+    descripcion:
+      "Desarrolla un sistema de recomendación avanzado que combine filtrado colaborativo, procesamiento de lenguaje natural y aprendizaje por refuerzo para proporcionar recomendaciones altamente personalizadas.",
+    categoria: "IA",
+    tecnologias: ["Python", "Rust"],
+    frameworks: ["PyTorch", "TensorFlow", "Ray"],
+    basesdedatos: ["MongoDB", "Neo4j"],
+    nivel: "Master",
+    tipo: "API",
+  },
   {
     titulo: "Plataforma de Aprendizaje Federado",
     descripcion:
-      "Desarrolla una plataforma para entrenar modelos de machine learning de forma distribuida sin compartir datos sensibles entre participantes.",
+      "Implementa una plataforma de aprendizaje federado que permita entrenar modelos de IA en datos distribuidos sin comprometer la privacidad de los usuarios.",
     categoria: "IA",
     tecnologias: ["Python", "C++"],
-    frameworks: ["TensorFlow", "PyTorch"],
-    basesdedatos: ["MongoDB", "Redis"],
+    frameworks: ["TensorFlow Federated", "PySyft"],
+    basesdedatos: ["PostgreSQL"],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "API",
   },
   {
-    titulo: "Motor de Búsqueda Semántica",
+    titulo: "Sistema de Detección de Anomalías en Tiempo Real",
     descripcion:
-      "Implementa un motor de búsqueda que comprenda el significado y contexto de las consultas utilizando procesamiento de lenguaje natural avanzado.",
+      "Crea un sistema que detecte anomalías en tiempo real en flujos de datos masivos utilizando técnicas avanzadas de aprendizaje automático y procesamiento de señales.",
     categoria: "IA",
-    tecnologias: ["Python", "Rust"],
-    frameworks: ["Transformers", "FAISS", "Elasticsearch"],
-    basesdedatos: ["PostgreSQL", "Neo4j"],
+    tecnologias: ["Python", "Scala"],
+    frameworks: ["Spark Streaming", "PyTorch", "Kafka"],
+    basesdedatos: ["InfluxDB", "Elasticsearch"],
     nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Sistema de Detección de Anomalías en Series Temporales",
-    descripcion:
-      "Crea un sistema para detectar anomalías en datos de series temporales utilizando técnicas avanzadas de machine learning y estadística.",
-    categoria: "IA",
-    tecnologias: ["Python", "R"],
-    frameworks: ["TensorFlow", "Prophet", "Keras"],
-    basesdedatos: ["InfluxDB", "TimescaleDB"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Plataforma de Generación de Contenido con IA",
-    descripcion:
-      "Desarrolla una plataforma que utilice modelos generativos avanzados para crear contenido multimedia (texto, imágenes, música) con controles precisos.",
-    categoria: "IA",
-    tecnologias: ["Python", "JavaScript"],
-    frameworks: ["PyTorch", "React", "Next.js"],
-    basesdedatos: ["MongoDB", "Redis"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
 
   // Security
   {
-    titulo: "Framework de Seguridad para Aplicaciones Distribuidas",
+    titulo: "Plataforma de Seguridad Zero-Trust",
     descripcion:
-      "Diseña e implementa un framework de seguridad completo para aplicaciones distribuidas con autenticación, autorización, cifrado y auditoría.",
+      "Desarrolla una plataforma de seguridad basada en el modelo Zero-Trust con autenticación multifactor, autorización contextual y monitoreo continuo de comportamiento.",
     categoria: "Seguridad",
-    tecnologias: ["Rust", "Go"],
-    frameworks: ["Tokio", "gRPC"],
-    basesdedatos: ["PostgreSQL"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Plataforma de Análisis de Vulnerabilidades",
-    descripcion:
-      "Crea una plataforma para detectar, analizar y clasificar vulnerabilidades en código fuente y aplicaciones desplegadas.",
-    categoria: "Seguridad",
-    tecnologias: ["Python", "Rust"],
-    frameworks: ["Django", "React"],
-    basesdedatos: ["PostgreSQL", "Elasticsearch"],
+    tecnologias: ["Rust", "Go", "TypeScript"],
+    frameworks: ["SPIFFE/SPIRE", "OPA", "Envoy"],
+    basesdedatos: ["PostgreSQL", "Redis"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
   {
     titulo: "Sistema de Detección y Respuesta a Intrusiones",
     descripcion:
-      "Implementa un sistema avanzado para detectar, analizar y responder automáticamente a intrusiones en redes y sistemas.",
+      "Implementa un sistema avanzado de detección y respuesta a intrusiones que utilice aprendizaje automático para identificar amenazas y responder automáticamente a incidentes de seguridad.",
     categoria: "Seguridad",
-    tecnologias: ["Python", "Go"],
-    frameworks: ["Zeek", "Suricata"],
-    basesdedatos: ["Elasticsearch", "ClickHouse"],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-
-  // High Performance Computing
-  {
-    titulo: "Motor de Física para Simulaciones Científicas",
-    descripcion:
-      "Desarrolla un motor de física de alto rendimiento para simulaciones científicas complejas con soporte para computación paralela y distribuida.",
-    categoria: "Computación de Alto Rendimiento",
-    tecnologias: ["C++", "CUDA"],
-    frameworks: ["OpenMP", "MPI"],
-    basesdedatos: [],
+    tecnologias: ["Python", "Go", "Rust"],
+    frameworks: ["Suricata", "Zeek", "TensorFlow"],
+    basesdedatos: ["Elasticsearch", "Kafka"],
     nivel: "Master",
     tipo: "Aplicación de Escritorio",
   },
   {
-    titulo: "Sistema de Renderizado 3D en Tiempo Real",
+    titulo: "Plataforma de Análisis de Vulnerabilidades",
     descripcion:
-      "Implementa un sistema de renderizado 3D avanzado con técnicas modernas como ray tracing, iluminación global y física realista.",
-    categoria: "Gráficos por Computadora",
-    tecnologias: ["C++", "Rust"],
-    frameworks: ["Vulkan", "DirectX 12"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Biblioteca de Algoritmos Criptográficos Post-Cuánticos",
-    descripcion:
-      "Crea una biblioteca de algoritmos criptográficos resistentes a ataques cuánticos con implementaciones optimizadas y verificables formalmente.",
-    categoria: "Criptografía",
-    tecnologias: ["Rust", "C++"],
-    frameworks: [],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-
-  // Web/Cloud Advanced
-  {
-    titulo: "Plataforma Serverless Personalizada",
-    descripcion:
-      "Diseña e implementa una plataforma serverless completa con aislamiento de funciones, escalado automático y observabilidad.",
-    categoria: "Cloud Computing",
-    tecnologias: ["Go", "Rust"],
-    frameworks: ["Kubernetes", "Prometheus"],
-    basesdedatos: ["etcd", "PostgreSQL"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Framework Web de Alto Rendimiento",
-    descripcion: "Desarrolla un framework web optimizado para alto rendimiento, baja latencia y eficiencia energética.",
-    categoria: "Web",
-    tecnologias: ["Rust", "C++"],
-    frameworks: [],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Sistema de Caché Distribuido",
-    descripcion:
-      "Implementa un sistema de caché distribuido con consistencia configurable, particionamiento automático y recuperación ante fallos.",
-    categoria: "Sistemas Distribuidos",
-    tecnologias: ["Go", "Rust"],
-    frameworks: ["gRPC"],
-    basesdedatos: [],
+      "Crea una plataforma que analice código, infraestructura y configuraciones para identificar vulnerabilidades de seguridad y proporcionar recomendaciones de mitigación.",
+    categoria: "Seguridad",
+    tecnologias: ["Python", "TypeScript", "Go"],
+    frameworks: ["OWASP ZAP", "Trivy", "Semgrep"],
+    basesdedatos: ["PostgreSQL", "Neo4j"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
 
-  // Blockchain/Web3
+  // Blockchain
   {
     titulo: "Plataforma Blockchain Personalizada",
     descripcion:
-      "Diseña e implementa una blockchain completa con mecanismo de consenso, contratos inteligentes y pruebas formales de seguridad.",
+      "Desarrolla una blockchain personalizada con un mecanismo de consenso eficiente, contratos inteligentes y alta capacidad de procesamiento de transacciones.",
     categoria: "Blockchain",
-    tecnologias: ["Rust", "Go"],
-    frameworks: [],
-    basesdedatos: ["RocksDB"],
+    tecnologias: ["Rust", "Go", "C++"],
+    frameworks: ["Substrate", "Tendermint"],
+    basesdedatos: ["RocksDB", "LevelDB"],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
   {
     titulo: "Sistema de Identidad Descentralizada",
     descripcion:
-      "Desarrolla un sistema de identidad descentralizada con credenciales verificables, pruebas de conocimiento cero y privacidad por diseño.",
+      "Implementa un sistema de identidad descentralizada basado en blockchain que permita a los usuarios controlar sus datos personales y credenciales verificables.",
     categoria: "Blockchain",
-    tecnologias: ["Rust", "TypeScript"],
-    frameworks: ["Substrate", "React"],
-    basesdedatos: [],
+    tecnologias: ["TypeScript", "Rust"],
+    frameworks: ["Hyperledger Aries", "DID", "Verifiable Credentials"],
+    basesdedatos: ["IPFS", "OrbitDB"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
   {
-    titulo: "Plataforma de Finanzas Descentralizadas (DeFi)",
+    titulo: "Plataforma DeFi Avanzada",
     descripcion:
-      "Crea una plataforma DeFi completa con protocolos de préstamo, intercambio y derivados financieros con seguridad verificable formalmente.",
+      "Crea una plataforma DeFi completa con protocolos de préstamo, intercambio y derivados financieros implementados como contratos inteligentes.",
     categoria: "Blockchain",
-    tecnologias: ["Solidity", "Rust"],
-    frameworks: ["Hardhat", "Anchor"],
-    basesdedatos: [],
+    tecnologias: ["Solidity", "Rust", "TypeScript"],
+    frameworks: ["Hardhat", "Anchor", "React"],
+    basesdedatos: ["The Graph", "IPFS"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
 
-  // Mobile/Embedded
+  // Databases
   {
-    titulo: "Sistema Operativo para Dispositivos IoT",
+    titulo: "Motor de Base de Datos Personalizado",
     descripcion:
-      "Desarrolla un sistema operativo ligero y seguro para dispositivos IoT con soporte para actualizaciones OTA y aislamiento de aplicaciones.",
-    categoria: "IoT",
-    tecnologias: ["Rust", "C"],
-    frameworks: [],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Framework de Aplicaciones Móviles de Alto Rendimiento",
-    descripcion:
-      "Crea un framework para desarrollar aplicaciones móviles de alto rendimiento con renderizado nativo y lógica compartida entre plataformas.",
-    categoria: "Móvil",
-    tecnologias: ["Rust", "C++", "Kotlin", "Swift"],
-    frameworks: [],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación Móvil",
-  },
-  {
-    titulo: "Plataforma de Realidad Aumentada Avanzada",
-    descripcion:
-      "Implementa una plataforma de realidad aumentada con reconocimiento avanzado de objetos, mapeo espacial y renderizado fotorrealista.",
-    categoria: "Realidad Aumentada",
-    tecnologias: ["C++", "Swift", "Kotlin"],
-    frameworks: ["ARKit", "ARCore", "Vulkan"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación Móvil",
-  },
-
-  // Gaming
-  {
-    titulo: "Motor de Juegos Multiplataforma",
-    descripcion:
-      "Diseña e implementa un motor de juegos completo con renderizado avanzado, física, audio, networking y herramientas de desarrollo.",
-    categoria: "Juegos",
-    tecnologias: ["C++", "Rust"],
-    frameworks: ["Vulkan", "DirectX 12"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Sistema de IA para NPCs en Juegos",
-    descripcion:
-      "Desarrolla un sistema avanzado de inteligencia artificial para personajes no jugables con comportamientos emergentes y aprendizaje.",
-    categoria: "Juegos",
-    tecnologias: ["C++", "C#"],
-    frameworks: ["Unity", "Unreal Engine"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Plataforma de Juegos en la Nube",
-    descripcion:
-      "Crea una plataforma para ejecutar juegos en la nube con streaming de baja latencia, escalado automático y sincronización entre dispositivos.",
-    categoria: "Juegos",
-    tecnologias: ["C++", "Rust", "Go"],
-    frameworks: ["WebRTC", "Kubernetes"],
-    basesdedatos: ["Redis", "PostgreSQL"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-
-  // Data Engineering
-  {
-    titulo: "Motor de Consultas Distribuido",
-    descripcion:
-      "Implementa un motor de consultas distribuido para análisis de datos a gran escala con optimización automática de consultas.",
+      "Desarrolla un motor de base de datos optimizado para un caso de uso específico, con un modelo de almacenamiento eficiente, índices avanzados y un lenguaje de consulta personalizado.",
     categoria: "Bases de Datos",
-    tecnologias: ["Rust", "C++"],
-    frameworks: ["Arrow", "DataFusion"],
+    tecnologias: ["C++", "Rust", "Go"],
+    frameworks: ["LLVM", "RocksDB"],
     basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Plataforma de Integración de Datos en Tiempo Real",
-    descripcion:
-      "Desarrolla una plataforma para integrar, transformar y sincronizar datos de múltiples fuentes en tiempo real con garantías de consistencia.",
-    categoria: "Integración de Datos",
-    tecnologias: ["Java", "Scala"],
-    frameworks: ["Apache Kafka", "Apache Flink"],
-    basesdedatos: ["PostgreSQL", "MongoDB"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
   {
     titulo: "Sistema de Almacenamiento de Series Temporales",
     descripcion:
-      "Crea un sistema optimizado para almacenar y consultar eficientemente grandes volúmenes de datos de series temporales.",
+      "Implementa un sistema de almacenamiento optimizado para datos de series temporales con compresión avanzada, consultas eficientes y políticas de retención configurables.",
     categoria: "Bases de Datos",
-    tecnologias: ["Rust", "C++"],
-    frameworks: [],
+    tecnologias: ["Rust", "C++", "Go"],
+    frameworks: ["Arrow", "InfluxDB Engine"],
     basesdedatos: [],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Base de Datos Vectorial para IA",
+    descripcion:
+      "Crea una base de datos vectorial optimizada para búsquedas de similitud en espacios de alta dimensión, ideal para aplicaciones de IA y recuperación de información.",
+    categoria: "Bases de Datos",
+    tecnologias: ["Rust", "C++", "Python"],
+    frameworks: ["FAISS", "HNSW"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+
+  // Compilers and Programming Languages
+  {
+    titulo: "Compilador para un Lenguaje de Programación Personalizado",
+    descripcion:
+      "Desarrolla un compilador completo para un lenguaje de programación personalizado, incluyendo análisis léxico, sintáctico, semántico, optimización y generación de código.",
+    categoria: "Compiladores",
+    tecnologias: ["Rust", "C++", "OCaml"],
+    frameworks: ["LLVM", "ANTLR"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Aplicación de Escritorio",
+  },
+  {
+    titulo: "Intérprete de Lenguaje de Dominio Específico",
+    descripcion:
+      "Implementa un intérprete para un lenguaje de dominio específico (DSL) diseñado para resolver problemas en un dominio particular de manera eficiente y expresiva.",
+    categoria: "Lenguajes",
+    tecnologias: ["Rust", "TypeScript", "Python"],
+    frameworks: ["ANTLR", "Tree-sitter"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Aplicación de Escritorio",
+  },
+  {
+    titulo: "Motor de Ejecución de Código Seguro",
+    descripcion:
+      "Crea un entorno de ejecución aislado que permita ejecutar código no confiable de manera segura, con límites de recursos y permisos granulares.",
+    categoria: "Seguridad",
+    tecnologias: ["Rust", "C++", "WebAssembly"],
+    frameworks: ["V8", "Wasmtime"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+
+  // Graphics and Simulation
+  {
+    titulo: "Motor de Renderizado 3D Avanzado",
+    descripcion:
+      "Desarrolla un motor de renderizado 3D con técnicas avanzadas como ray tracing, iluminación global y materiales físicamente correctos.",
+    categoria: "Gráficos",
+    tecnologias: ["C++", "Rust", "GLSL"],
+    frameworks: ["Vulkan", "DirectX", "OptiX"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Aplicación de Escritorio",
+  },
+  {
+    titulo: "Simulador de Física en Tiempo Real",
+    descripcion:
+      "Implementa un simulador de física en tiempo real que modele fluidos, cuerpos rígidos, telas y otros fenómenos físicos con alta precisión y rendimiento.",
+    categoria: "Simulación",
+    tecnologias: ["C++", "CUDA", "Rust"],
+    frameworks: ["PhysX", "Bullet", "OpenCL"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Aplicación de Escritorio",
+  },
+  {
+    titulo: "Plataforma de Realidad Virtual Colaborativa",
+    descripcion:
+      "Crea una plataforma de realidad virtual que permita a múltiples usuarios interactuar en un espacio compartido con baja latencia y sincronización precisa.",
+    categoria: "Realidad Virtual",
+    tecnologias: ["C#", "C++", "TypeScript"],
+    frameworks: ["Unity", "WebXR", "WebRTC"],
+    basesdedatos: ["Redis", "MongoDB"],
     nivel: "Master",
     tipo: "Aplicación de Escritorio",
   },
 
-  // Programming Languages
+  // Networking and Protocols
   {
-    titulo: "Lenguaje de Programación con Sistema de Tipos Avanzado",
+    titulo: "Implementación de Protocolo de Red Personalizado",
     descripcion:
-      "Diseña e implementa un lenguaje de programación con un sistema de tipos avanzado que garantice seguridad y expresividad.",
-    categoria: "Lenguajes de Programación",
-    tecnologias: ["OCaml", "Rust"],
-    frameworks: ["LLVM"],
+      "Desarrolla un protocolo de red personalizado optimizado para un caso de uso específico, con mecanismos de control de congestión, recuperación de errores y seguridad integrada.",
+    categoria: "Redes",
+    tecnologias: ["Rust", "C++", "Go"],
+    frameworks: ["QUIC", "libp2p"],
     basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación de Escritorio",
+    tipo: "Backend",
   },
   {
-    titulo: "Entorno de Desarrollo Interactivo",
+    titulo: "Proxy de Red Programable",
     descripcion:
-      "Desarrolla un entorno de desarrollo interactivo con evaluación incremental, depuración avanzada y visualización de datos.",
-    categoria: "Herramientas de Desarrollo",
-    tecnologias: ["TypeScript", "Rust"],
-    frameworks: ["React", "Monaco Editor"],
-    basesdedatos: [],
+      "Implementa un proxy de red programable que pueda inspeccionar, transformar y enrutar tráfico de red con reglas personalizables y extensiones dinámicas.",
+    categoria: "Redes",
+    tecnologias: ["Rust", "Go", "C++"],
+    frameworks: ["Envoy", "eBPF"],
+    basesdedatos: ["Redis", "etcd"],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Sistema de Comunicación Segura P2P",
+    descripcion:
+      "Crea un sistema de comunicación peer-to-peer con cifrado de extremo a extremo, enrutamiento anónimo y resistencia a la censura.",
+    categoria: "Redes",
+    tecnologias: ["Rust", "Go", "TypeScript"],
+    frameworks: ["libp2p", "Noise Protocol"],
+    basesdedatos: ["IPFS", "OrbitDB"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
+
+  // Operating Systems and Low-level
   {
-    titulo: "Sistema de Verificación Formal",
+    titulo: "Kernel de Sistema Operativo Minimalista",
     descripcion:
-      "Implementa un sistema para verificar formalmente propiedades de programas utilizando lógica de Hoare, model checking o asistentes de prueba.",
-    categoria: "Verificación Formal",
-    tecnologias: ["OCaml", "Coq", "Lean"],
+      "Desarrolla un kernel de sistema operativo minimalista con planificación de procesos, gestión de memoria y controladores de dispositivos básicos.",
+    categoria: "Sistemas Operativos",
+    tecnologias: ["Rust", "C", "Assembly"],
     frameworks: [],
     basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación de Escritorio",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Hipervisor de Máquina Virtual",
+    descripcion:
+      "Implementa un hipervisor que permita ejecutar múltiples sistemas operativos en una misma máquina con aislamiento y virtualización eficiente.",
+    categoria: "Virtualización",
+    tecnologias: ["C", "Rust", "Assembly"],
+    frameworks: ["KVM", "QEMU"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Sistema de Archivos Distribuido",
+    descripcion:
+      "Crea un sistema de archivos distribuido con replicación, tolerancia a fallos y semántica de consistencia configurable.",
+    categoria: "Almacenamiento",
+    tecnologias: ["Go", "Rust", "C++"],
+    frameworks: ["gRPC", "FUSE"],
+    basesdedatos: ["etcd", "RocksDB"],
+    nivel: "Master",
+    tipo: "Backend",
   },
 
-  // Quantum Computing
+  // Web and Cloud
   {
-    titulo: "Simulador de Computación Cuántica",
+    titulo: "Framework Web de Alto Rendimiento",
     descripcion:
-      "Desarrolla un simulador de computación cuántica de alto rendimiento con soporte para diferentes modelos de ruido y algoritmos cuánticos.",
-    categoria: "Computación Cuántica",
-    tecnologias: ["C++", "Python"],
-    frameworks: ["CUDA"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Biblioteca de Algoritmos Cuánticos",
-    descripcion:
-      "Crea una biblioteca de algoritmos cuánticos optimizados para diferentes arquitecturas de hardware cuántico.",
-    categoria: "Computación Cuántica",
-    tecnologias: ["Python", "Q#"],
-    frameworks: ["Qiskit", "Cirq"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-
-  // Robotics
-  {
-    titulo: "Framework de Control para Robots Autónomos",
-    descripcion:
-      "Diseña e implementa un framework para controlar robots autónomos con planificación de movimiento, percepción y toma de decisiones.",
-    categoria: "Robótica",
-    tecnologias: ["C++", "Python"],
-    frameworks: ["ROS 2"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-  {
-    titulo: "Sistema de Visión por Computadora para Robots",
-    descripcion:
-      "Desarrolla un sistema avanzado de visión por computadora para robots con reconocimiento de objetos, estimación de pose y reconstrucción 3D.",
-    categoria: "Robótica",
-    tecnologias: ["C++", "Python"],
-    frameworks: ["OpenCV", "PyTorch"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-
-  // Bioinformatics
-  {
-    titulo: "Plataforma de Análisis Genómico",
-    descripcion:
-      "Crea una plataforma para analizar datos genómicos a gran escala con algoritmos optimizados para alineamiento, ensamblaje y anotación.",
-    categoria: "Bioinformática",
-    tecnologias: ["Rust", "Python"],
-    frameworks: ["PyTorch"],
-    basesdedatos: ["PostgreSQL"],
-    nivel: "Master",
-    tipo: "Aplicación Web",
-  },
-  {
-    titulo: "Sistema de Simulación de Proteínas",
-    descripcion:
-      "Implementa un sistema para simular el plegamiento y dinámica de proteínas utilizando técnicas avanzadas de física computacional.",
-    categoria: "Bioinformática",
-    tecnologias: ["C++", "CUDA"],
-    frameworks: ["OpenMM"],
-    basesdedatos: [],
-    nivel: "Master",
-    tipo: "Aplicación de Escritorio",
-  },
-
-  // Advanced Web
-  {
-    titulo: "Framework Web con Renderizado Isomórfico",
-    descripcion:
-      "Desarrolla un framework web con renderizado isomórfico, hidratación progresiva y optimización automática de rendimiento.",
+      "Desarrolla un framework web de alto rendimiento con enrutamiento eficiente, manejo de solicitudes asíncronas y optimizaciones avanzadas.",
     categoria: "Web",
-    tecnologias: ["TypeScript", "Rust"],
+    tecnologias: ["Rust", "Go", "TypeScript"],
     frameworks: [],
     basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
   {
-    titulo: "Sistema de Gestión de Contenido Headless",
+    titulo: "Plataforma Serverless Personalizada",
     descripcion:
-      "Crea un CMS headless con modelado de contenido flexible, versionado, localización y API GraphQL optimizada.",
-    categoria: "Web",
-    tecnologias: ["TypeScript", "Go"],
-    frameworks: ["Next.js", "GraphQL"],
-    basesdedatos: ["PostgreSQL"],
+      "Implementa una plataforma serverless que permita ejecutar funciones en respuesta a eventos con escalado automático y aislamiento de recursos.",
+    categoria: "Cloud",
+    tecnologias: ["Go", "Rust", "TypeScript"],
+    frameworks: ["Kubernetes", "Knative", "WASM"],
+    basesdedatos: ["etcd", "Redis"],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
   {
-    titulo: "Plataforma de E-commerce de Alta Escalabilidad",
+    titulo: "CDN Programable",
     descripcion:
-      "Implementa una plataforma de e-commerce diseñada para manejar picos de tráfico extremos con alta disponibilidad y baja latencia.",
-    categoria: "E-commerce",
-    tecnologias: ["Go", "TypeScript"],
-    frameworks: ["React", "gRPC"],
-    basesdedatos: ["PostgreSQL", "Redis", "Elasticsearch"],
+      "Crea una red de distribución de contenido (CDN) programable con edge computing, caché inteligente y optimización de entrega de contenido.",
+    categoria: "Web",
+    tecnologias: ["Rust", "Go", "JavaScript"],
+    frameworks: ["V8", "Envoy"],
+    basesdedatos: ["Redis", "LevelDB"],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+
+  // Mobile and IoT
+  {
+    titulo: "Framework de Aplicaciones Móviles Multiplataforma",
+    descripcion:
+      "Desarrolla un framework para crear aplicaciones móviles multiplataforma con rendimiento nativo, acceso a APIs del sistema y experiencia de desarrollo fluida.",
+    categoria: "Móvil",
+    tecnologias: ["Rust", "C++", "TypeScript"],
+    frameworks: [],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Aplicación Móvil",
+  },
+  {
+    titulo: "Sistema Operativo para IoT",
+    descripcion:
+      "Implementa un sistema operativo ligero para dispositivos IoT con soporte para actualizaciones OTA, seguridad robusta y bajo consumo de energía.",
+    categoria: "IoT",
+    tecnologias: ["C", "Rust", "Assembly"],
+    frameworks: ["FreeRTOS", "Zephyr"],
+    basesdedatos: [],
+    nivel: "Master",
+    tipo: "Backend",
+  },
+  {
+    titulo: "Plataforma de Gestión de Dispositivos IoT",
+    descripcion:
+      "Crea una plataforma para gestionar, monitorear y actualizar miles de dispositivos IoT de manera segura y eficiente.",
+    categoria: "IoT",
+    tecnologias: ["Go", "Rust", "TypeScript"],
+    frameworks: ["MQTT", "gRPC", "React"],
+    basesdedatos: ["TimescaleDB", "Kafka"],
     nivel: "Master",
     tipo: "Aplicación Web",
   },
 
-  // DevOps/SRE
+  // Game Development
   {
-    titulo: "Plataforma de Observabilidad Distribuida",
+    titulo: "Motor de Juegos Personalizado",
     descripcion:
-      "Desarrolla una plataforma completa para monitorear, trazar y depurar sistemas distribuidos a gran escala.",
-    categoria: "DevOps",
-    tecnologias: ["Go", "Rust"],
-    frameworks: ["OpenTelemetry"],
-    basesdedatos: ["ClickHouse", "Prometheus"],
+      "Desarrolla un motor de juegos completo con renderizado, física, audio, networking y herramientas de desarrollo.",
+    categoria: "Juegos",
+    tecnologias: ["C++", "Rust", "C#"],
+    frameworks: ["Vulkan", "PhysX", "FMOD"],
+    basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Aplicación de Escritorio",
   },
   {
-    titulo: "Sistema de Despliegue Continuo Multi-Entorno",
+    titulo: "Sistema de IA para Juegos",
     descripcion:
-      "Crea un sistema avanzado de CI/CD con despliegues canary, rollbacks automáticos y verificación de calidad.",
-    categoria: "DevOps",
-    tecnologias: ["Go", "TypeScript"],
-    frameworks: ["Kubernetes", "Argo CD"],
-    basesdedatos: ["PostgreSQL", "etcd"],
+      "Implementa un sistema de inteligencia artificial para juegos con planificación de caminos, toma de decisiones y aprendizaje por refuerzo.",
+    categoria: "Juegos",
+    tecnologias: ["C++", "C#", "Python"],
+    frameworks: ["Unity", "TensorFlow", "PyTorch"],
+    basesdedatos: [],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Aplicación de Escritorio",
   },
   {
-    titulo: "Plataforma de Infraestructura como Código",
+    titulo: "Plataforma de Juegos Multijugador Masivos",
     descripcion:
-      "Implementa una plataforma para gestionar infraestructura como código con validación, testing y gestión de dependencias.",
-    categoria: "DevOps",
-    tecnologias: ["Go", "TypeScript"],
-    frameworks: ["Kubernetes"],
-    basesdedatos: ["PostgreSQL"],
+      "Crea una plataforma para juegos multijugador masivos con arquitectura distribuida, sincronización de estado y matchmaking avanzado.",
+    categoria: "Juegos",
+    tecnologias: ["Go", "Rust", "C++"],
+    frameworks: ["gRPC", "WebRTC", "Redis"],
+    basesdedatos: ["ScyllaDB", "Redis"],
     nivel: "Master",
-    tipo: "Aplicación Web",
+    tipo: "Backend",
   },
 ]
 

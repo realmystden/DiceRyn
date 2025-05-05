@@ -13,7 +13,7 @@ import { CheckCircle2, Circle, Award } from "lucide-react"
 export default function BadgeTasksPage() {
   const [mounted, setMounted] = useState(false)
   const [badgeTasks, setBadgeTasks] = useState<any[]>([])
-  const { achievements, completedProjects, getConsecutiveDaysStreak } = useProjectIdeasStore()
+  const { achievements, completedProjects, getConsecutiveDaysStreak, easterEggActivated } = useProjectIdeasStore()
 
   useEffect(() => {
     setMounted(true)
@@ -26,6 +26,16 @@ export default function BadgeTasksPage() {
     const tasks: any[] = []
 
     badges.forEach((badge) => {
+      // Skip Master level badges if Easter egg is not activated
+      if (badge.level === "Master" && !easterEggActivated) {
+        return
+      }
+
+      // Skip Brainfuck badges if Easter egg is not activated
+      if (badge.id.includes("brainfuck") && !easterEggActivated) {
+        return
+      }
+
       const { unlocked, progress } = checkBadgeUnlocked(badge, achievements, completedProjects, streakDays)
 
       // Only include badges that are not unlocked
@@ -51,7 +61,7 @@ export default function BadgeTasksPage() {
     }
 
     setBadgeTasks(tasks.sort(sortByLevelAndProgress))
-  }, [mounted, achievements, completedProjects, getConsecutiveDaysStreak])
+  }, [mounted, achievements, completedProjects, getConsecutiveDaysStreak, easterEggActivated])
 
   // Function to generate specific tasks for a badge
   const generateTasksForBadge = (badge: any, completedProjects: any[], streakDays: number) => {
@@ -314,69 +324,92 @@ export default function BadgeTasksPage() {
                 <TabsTrigger value="senior" className="font-fondamento text-orange-400">
                   Senior
                 </TabsTrigger>
-                <TabsTrigger value="master" className="font-fondamento text-red-400">
-                  Master
-                </TabsTrigger>
+                {easterEggActivated && (
+                  <TabsTrigger value="master" className="font-fondamento text-red-400">
+                    Master
+                  </TabsTrigger>
+                )}
+                {!easterEggActivated && (
+                  <TabsTrigger value="locked" disabled className="font-fondamento text-gray-600">
+                    Bloqueado
+                  </TabsTrigger>
+                )}
               </TabsList>
 
-              {["student", "trainee", "junior", "senior", "master"].map((level) => (
-                <TabsContent key={level} value={level}>
-                  <div className="space-y-6">
-                    {badgeTasks
-                      .filter((badge) => badge.level.toLowerCase() === level)
-                      .map((badge) => (
-                        <div key={badge.id} className={`p-4 border rounded-lg ${getLevelBgColor(badge.level)}`}>
-                          <div className="flex items-start">
-                            <div
-                              className={`flex items-center justify-center w-12 h-12 rounded-full mr-4 text-2xl bg-gray-800/50`}
-                            >
-                              {badge.icon}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start">
-                                <h3 className="text-lg font-cinzel text-white mb-1">{badge.name}</h3>
-                                <span className={`px-2 py-0.5 text-xs rounded-full ${getLevelColor(badge.level)}`}>
-                                  {badge.progress}%
-                                </span>
-                              </div>
-                              <p className="text-gray-300 text-sm mb-2">{badge.description}</p>
-                              <Progress value={badge.progress} className="h-2 mb-4" />
+              {["student", "trainee", "junior", "senior", "master"].map((level) => {
+                // Skip Master tab if Easter egg is not activated
+                if (level === "master" && !easterEggActivated) {
+                  return null
+                }
 
-                              <div className="space-y-2 mt-4">
-                                <h4 className="text-sm font-cinzel text-white flex items-center">
-                                  <Award className="h-4 w-4 mr-2" />
-                                  Tareas para desbloquear:
-                                </h4>
-                                <ul className="space-y-2">
-                                  {badge.tasks.map((task: any, index: number) => (
-                                    <li key={index} className="flex items-start">
-                                      {task.completed ? (
-                                        <CheckCircle2 className="h-5 w-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
-                                      ) : (
-                                        <Circle className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0 mt-0.5" />
-                                      )}
-                                      <span className="text-sm text-gray-300">{task.description}</span>
-                                    </li>
-                                  ))}
-                                </ul>
+                return (
+                  <TabsContent key={level} value={level}>
+                    <div className="space-y-6">
+                      {badgeTasks
+                        .filter((badge) => badge.level.toLowerCase() === level)
+                        .map((badge) => (
+                          <div key={badge.id} className={`p-4 border rounded-lg ${getLevelBgColor(badge.level)}`}>
+                            <div className="flex items-start">
+                              <div
+                                className={`flex items-center justify-center w-12 h-12 rounded-full mr-4 text-2xl bg-gray-800/50`}
+                              >
+                                {badge.icon}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                  <h3 className="text-lg font-cinzel text-white mb-1">{badge.name}</h3>
+                                  <span className={`px-2 py-0.5 text-xs rounded-full ${getLevelColor(badge.level)}`}>
+                                    {badge.progress}%
+                                  </span>
+                                </div>
+                                <p className="text-gray-300 text-sm mb-2">{badge.description}</p>
+                                <Progress value={badge.progress} className="h-2 mb-4" />
+
+                                <div className="space-y-2 mt-4">
+                                  <h4 className="text-sm font-cinzel text-white flex items-center">
+                                    <Award className="h-4 w-4 mr-2" />
+                                    Tareas para desbloquear:
+                                  </h4>
+                                  <ul className="space-y-2">
+                                    {badge.tasks.map((task: any, index: number) => (
+                                      <li key={index} className="flex items-start">
+                                        {task.completed ? (
+                                          <CheckCircle2 className="h-5 w-5 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
+                                        ) : (
+                                          <Circle className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0 mt-0.5" />
+                                        )}
+                                        <span className="text-sm text-gray-300">{task.description}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
 
-                    {badgeTasks.filter((badge) => badge.level.toLowerCase() === level).length === 0 && (
-                      <div className="text-center py-8 text-gray-400 font-fondamento">
-                        <p>
-                          No hay tareas pendientes para insignias de nivel{" "}
-                          {level.charAt(0).toUpperCase() + level.slice(1)}.
-                        </p>
-                        <p className="mt-2">¡Has completado todas las insignias de este nivel o estás muy cerca!</p>
-                      </div>
-                    )}
+                      {badgeTasks.filter((badge) => badge.level.toLowerCase() === level).length === 0 && (
+                        <div className="text-center py-8 text-gray-400 font-fondamento">
+                          <p>
+                            No hay tareas pendientes para insignias de nivel{" "}
+                            {level.charAt(0).toUpperCase() + level.slice(1)}.
+                          </p>
+                          <p className="mt-2">¡Has completado todas las insignias de este nivel o estás muy cerca!</p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                )
+              })}
+
+              {!easterEggActivated && (
+                <TabsContent value="locked">
+                  <div className="text-center py-8 text-gray-400 font-fondamento">
+                    <p>Este nivel está bloqueado.</p>
+                    <p className="mt-2">Descubre el Easter egg para desbloquear contenido adicional.</p>
                   </div>
                 </TabsContent>
-              ))}
+              )}
             </Tabs>
           </AnimatedSection>
         </div>

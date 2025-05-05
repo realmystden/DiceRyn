@@ -84,6 +84,26 @@ export function ProjectIdeas({ selectedIdeaOverride }: ProjectIdeasProps) {
           caracteristicas: ["No disponible"],
         }
 
+  // Check if the idea should be displayed based on filters
+  // Master level projects should only be shown when Master filter is selected
+  if (idea.nivel === "Master" && nivelFilter !== "Master") {
+    return (
+      <div className="w-full max-w-2xl fantasy-card p-6 shadow-xl bg-[#121214] border border-gray-700">
+        <h3 className="text-xl font-cinzel font-semibold mb-2 text-white">Proyecto de nivel Master</h3>
+        <p className="mb-4 font-fondamento text-white">
+          Este proyecto es de nivel Master y solo está disponible cuando el filtro de nivel Master está seleccionado.
+        </p>
+        <Button
+          onClick={handleReset}
+          variant="outline"
+          className="fantasy-button border-gray-600 hover:bg-gray-700 text-white"
+        >
+          <span className="font-fondamento">Lanzar de nuevo</span>
+        </Button>
+      </div>
+    )
+  }
+
   // Verificar si el proyecto está completado
   const completed = isProjectCompleted(selectedIdea)
 
@@ -142,6 +162,8 @@ export function ProjectIdeas({ selectedIdeaOverride }: ProjectIdeasProps) {
         return "bg-blue-600/70 text-white"
       case "Senior":
         return "bg-purple-600/70 text-white"
+      case "Master":
+        return "bg-red-600/70 text-white"
       default:
         return "bg-gray-600/70 text-white"
     }
