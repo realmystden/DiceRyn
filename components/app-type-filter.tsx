@@ -10,6 +10,45 @@ import { projectIdeas } from "@/lib/project-ideas"
 
 export function AppTypeFilter() {
   const [open, setOpen] = useState(false)
+
+  // Mapeo de tipos de aplicación a niveles de dificultad y colores
+  const appTypeDifficulty: Record<string, { color: string }> = {
+    Web: { color: "text-green-400" },
+    Móvil: { color: "text-blue-400" },
+    Desktop: { color: "text-orange-400" },
+    API: { color: "text-yellow-400" },
+    Juego: { color: "text-orange-400" },
+    CLI: { color: "text-green-400" },
+    "Inteligencia Artificial": { color: "text-red-400" },
+    "Realidad Virtual": { color: "text-red-400" },
+    "Realidad Aumentada": { color: "text-red-400" },
+    "Internet de las Cosas": { color: "text-orange-400" },
+    Blockchain: { color: "text-red-400" },
+    "Programación Esotérica": { color: "text-purple-500" },
+  }
+
+  // Emojis para tipos de aplicación - cada tipo con un emoji único
+  const appTypeEmojis: Record<string, string> = {
+    Web: "🌐",
+    Móvil: "📱",
+    Desktop: "💻",
+    API: "🔌",
+    Juego: "🎮",
+    CLI: "⌨️",
+    "Inteligencia Artificial": "🧠",
+    "Realidad Virtual": "🥽",
+    "Realidad Aumentada": "👓",
+    "Internet de las Cosas": "🏠",
+    Blockchain: "⛓️",
+    "Programación Esotérica": "🔮",
+  }
+
+  // Función para obtener el color según el tipo de aplicación
+  const getAppTypeColor = (appType: string | null) => {
+    if (!appType) return "text-white"
+    return appTypeDifficulty[appType]?.color || "text-white"
+  }
+
   const { appTypeFilter, setAppTypeFilter, easterEggActivated } = useProjectIdeasStore()
   const [appTypes, setAppTypes] = useState<string[]>([])
 
@@ -32,9 +71,15 @@ export function AppTypeFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button"
+          className={`w-full md:w-[200px] justify-between fantasy-button ${getAppTypeColor(appTypeFilter)}`}
         >
-          {appTypeFilter ? appTypeFilter : "Todos los tipos"}
+          {appTypeFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{appTypeEmojis[appTypeFilter] || "📊"}</span> {appTypeFilter}
+            </span>
+          ) : (
+            "Todos los tipos"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -61,10 +106,12 @@ export function AppTypeFilter() {
                     setAppTypeFilter(type)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className={`cursor-pointer font-fondamento ${getAppTypeColor(type)}`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${appTypeFilter === type ? "opacity-100" : "opacity-0"}`} />
-                  {type}
+                  <span className="flex items-center">
+                    <span className="mr-2">{appTypeEmojis[type] || "📊"}</span> {type}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

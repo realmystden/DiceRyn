@@ -7,6 +7,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useProjectIdeasStore } from "@/lib/store"
 import { projectIdeas } from "@/lib/project-ideas"
+import { getTechnologyColor, getTechnologyEmoji } from "@/lib/additional-languages-frameworks"
 
 export function LanguageFilter() {
   const [open, setOpen] = useState(false)
@@ -34,9 +35,15 @@ export function LanguageFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button"
+          className={`w-full md:w-[200px] justify-between fantasy-button ${getTechnologyColor(languageFilter || "")}`}
         >
-          {languageFilter ? languageFilter : "Todos los lenguajes"}
+          {languageFilter ? (
+            <span className="flex items-center">
+              <span className="mr-2">{getTechnologyEmoji(languageFilter)}</span> {languageFilter}
+            </span>
+          ) : (
+            "Todos los lenguajes"
+          )}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -63,10 +70,12 @@ export function LanguageFilter() {
                     setLanguageFilter(language)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className={`cursor-pointer font-fondamento ${getTechnologyColor(language)}`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${languageFilter === language ? "opacity-100" : "opacity-0"}`} />
-                  {language}
+                  <span className="flex items-center">
+                    <span className="mr-2">{getTechnologyEmoji(language)}</span> {language}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -7,45 +7,12 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useProjectIdeasStore } from "@/lib/store"
 import { projectIdeas } from "@/lib/project-ideas"
+import { getTechnologyColor, getTechnologyEmoji } from "@/lib/additional-languages-frameworks"
 
 export function FrameworkFilter() {
   const [open, setOpen] = useState(false)
   const { frameworkFilter, setFrameworkFilter, appTypeFilter, languageFilter } = useProjectIdeasStore()
   const [frameworks, setFrameworks] = useState<string[]>([])
-
-  // Framework emojis mapping
-  const frameworkEmojis: Record<string, string> = {
-    React: "⚛️",
-    Angular: "🅰️",
-    Vue: "🟢",
-    "Next.js": "▲",
-    Express: "🚂",
-    Django: "🦄",
-    Spring: "🍃",
-    Laravel: "🔺",
-    Flutter: "🦋",
-    "React Native": "📱",
-    "Node.js": "🟩",
-    "Ruby on Rails": "🛤️",
-    "ASP.NET": "🔷",
-    Svelte: "🔥",
-    Flask: "🧪",
-    TensorFlow: "🧠",
-    PyTorch: "🔥",
-    Unity: "🎮",
-    "Unreal Engine": "🎯",
-    Electron: "⚡",
-    Tauri: "🦀",
-    "Three.js": "🌐",
-    "D3.js": "📊",
-    "Babylon.js": "🎲",
-    Akka: "🔄",
-    Spark: "⚡",
-    Play: "▶️",
-    gRPC: "📡",
-    GraphQL: "🔍",
-    WebSockets: "🔌",
-  }
 
   // Extraer frameworks únicos de las ideas filtradas por tipo de aplicación y lenguaje
   useEffect(() => {
@@ -102,11 +69,11 @@ export function FrameworkFilter() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full md:w-[200px] justify-between fantasy-button font-fondamento"
+          className={`w-full md:w-[200px] justify-between fantasy-button font-fondamento ${getTechnologyColor(frameworkFilter || "")}`}
         >
           {frameworkFilter ? (
             <span className="flex items-center">
-              <span className="mr-2">{frameworkEmojis[frameworkFilter] || "🧩"}</span> {frameworkFilter}
+              <span className="mr-2">{getTechnologyEmoji(frameworkFilter)}</span> {frameworkFilter}
             </span>
           ) : (
             "Todos los frameworks"
@@ -137,11 +104,11 @@ export function FrameworkFilter() {
                     setFrameworkFilter(framework)
                     setOpen(false)
                   }}
-                  className="cursor-pointer font-fondamento"
+                  className={`cursor-pointer font-fondamento ${getTechnologyColor(framework)}`}
                 >
                   <Check className={`mr-2 h-4 w-4 ${frameworkFilter === framework ? "opacity-100" : "opacity-0"}`} />
                   <span className="flex items-center">
-                    <span className="mr-2">{frameworkEmojis[framework] || "🧩"}</span> {framework}
+                    <span className="mr-2">{getTechnologyEmoji(framework)}</span> {framework}
                   </span>
                 </CommandItem>
               ))}

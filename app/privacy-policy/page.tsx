@@ -7,7 +7,7 @@ export default function PrivacyPolicyPage() {
         <h1 className="text-3xl font-cinzel font-bold text-white mb-6">Política de Privacidad</h1>
 
         <div className="prose prose-invert prose-purple max-w-none">
-          <p>Última actualización: Mayo 2023</p>
+          <p>Última actualización: Mayo 2025</p>
 
           <h2>1. Información que recopilamos</h2>
           <p>
