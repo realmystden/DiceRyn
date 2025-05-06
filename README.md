@@ -31,7 +31,7 @@
 
 ## 🚀 Instalación
 
-\`\`\`bash
+```bash
 # Clonar el repositorio
 git clone https://github.com/realmystden/diceryn.git
 
@@ -43,7 +43,7 @@ npm install
 
 # Iniciar el servidor de desarrollo
 npm run dev
-\`\`\`
+```
 
 ## 📱 Uso
 
