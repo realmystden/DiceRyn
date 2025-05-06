@@ -33,7 +33,7 @@
 
 \`\`\`bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/diceryn.git
+git clone https://github.com/realmystden/diceryn.git
 
 # Navegar al directorio
 cd diceryn
