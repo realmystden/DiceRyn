@@ -62,8 +62,6 @@ const Scene = () => {
   const [showParticles, setShowParticles] = useState(false)
   const [particlePosition, setParticlePosition] = useState([0, 0, 0])
   const { playSound } = useSound()
-  const canvasRef = useRef(null)
-  const animationFrameId = useRef(null)
 
   const {
     setSelectedIdea,
@@ -169,28 +167,10 @@ const Scene = () => {
   }
 
   useEffect(() => {
-    if (!canvasRef.current) return
-
     // Position camera
     camera.position.set(5, 5, 5)
     camera.lookAt(0, 0, 0)
-
-    return () => {
-      // Limpieza cuando el componente se desmonta
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current)
-        animationFrameId.current = null
-      }
-    }
   }, [camera])
-
-  const animate = () => {
-    if (!canvasRef.current) return
-
-    // Resto del código de animación...
-
-    animationFrameId.current = requestAnimationFrame(animate)
-  }
 
   return (
     <>
@@ -204,10 +184,9 @@ const Scene = () => {
 }
 
 export function DiceScene() {
-  const canvasRef = useRef(null)
   return (
     <div className="w-full h-[400px] fantasy-card">
-      <Canvas ref={canvasRef}>
+      <Canvas>
         <Scene />
       </Canvas>
     </div>

@@ -4,23 +4,14 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Menu, X, Home, Code, BarChart2, Medal, CheckSquare, ListTodo, LogIn, LogOut, User } from "lucide-react"
+import { Menu, X, Home, Code, BookOpen, BarChart2, Medal, CheckSquare, ListTodo } from "lucide-react"
 import Image from "next/image"
-import { useAuth } from "@/contexts/auth-context"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showUserMenu, setShowUserMenu] = useState(false)
   const pathname = usePathname()
-  const { user, signOut, isLoading } = useAuth()
 
   useEffect(() => {
     setMounted(true)
@@ -32,6 +23,10 @@ export function Navigation() {
 
   const closeMenu = () => {
     setIsOpen(false)
+  }
+
+  const toggleUserMenu = () => {
+    setShowUserMenu(!showUserMenu)
   }
 
   const navItems = [
@@ -78,56 +73,29 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center">
-            {isLoading ? (
-              <div className="w-10 h-10 rounded-full bg-gray-800 animate-pulse"></div>
-            ) : user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    {user.user_metadata.avatar_url ? (
-                      <Image
-                        src={user.user_metadata.avatar_url || "/placeholder.svg"}
-                        alt="Perfil de usuario"
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
-                    ) : (
-                      <User className="h-6 w-6 text-gray-300" />
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-gray-800 border-gray-700 text-white">
-                  <DropdownMenuLabel>
-                    <div className="font-bold">{user.user_metadata.name || user.email}</div>
-                    <div className="text-xs text-gray-400 truncate">{user.email}</div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-gray-700" />
-                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-700">
-                    <Link href="/profile" className="flex items-center w-full">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Perfil</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-gray-700" />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-gray-700"
-                    onClick={() => signOut()}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Cerrar sesión</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="flex items-center px-3 py-2 rounded-md text-sm font-fondamento text-gray-300 hover:bg-gray-800 hover:text-white"
+            <div className="relative">
+              <button
+                onClick={toggleUserMenu}
+                className="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <LogIn className="w-5 h-5 mr-1" />
-                <span>Iniciar sesión</span>
-              </Link>
-            )}
+                <Image
+                  src="https://pbs.twimg.com/profile_images/1907218289815662592/yZnMctPj_400x400.jpg"
+                  alt="Perfil de usuario"
+                  width={40}
+                  height={40}
+                  className="object-cover"
+                />
+              </button>
+
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 py-2 bg-gray-800 rounded-md shadow-xl z-50">
+                  <div className="px-4 py-2 text-sm text-white border-b border-gray-700">
+                    <p className="font-bold">Mystden</p>
+                    <p className="text-gray-400 text-xs">Usuario</p>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="ml-4 md:hidden">
               <button
@@ -167,30 +135,6 @@ export function Navigation() {
                 <span>{item.label}</span>
               </Link>
             ))}
-
-            {!user && (
-              <Link
-                href="/auth/login"
-                className="block px-3 py-2 rounded-md text-base font-fondamento flex items-center space-x-2 text-gray-300 hover:bg-gray-800 hover:text-white"
-                onClick={closeMenu}
-              >
-                <LogIn className="w-5 h-5" />
-                <span>Iniciar sesión</span>
-              </Link>
-            )}
-
-            {user && (
-              <button
-                onClick={() => {
-                  signOut()
-                  closeMenu()
-                }}
-                className="block w-full text-left px-3 py-2 rounded-md text-base font-fondamento flex items-center space-x-2 text-red-400 hover:bg-gray-800 hover:text-red-300"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Cerrar sesión</span>
-              </button>
-            )}
           </div>
         </motion.div>
       )}
