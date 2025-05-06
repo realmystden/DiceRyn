@@ -51,14 +51,8 @@ npm run dev
 2. **Aplica filtros**: Personaliza tu búsqueda con los filtros disponibles
 3. **Lanza el dado**: Haz clic en el dado 3D para obtener una idea aleatoria
 4. **Explora la idea**: Revisa los detalles de la idea generada
-5. **Guarda tus favoritas**: Marca las ideas que más te gusten para revisarlas después
-
-## 📸 Capturas de Pantalla
-
-<div align="center">
-  <img src="/public/screenshots/tech-dice.png" alt="Dado de Tecnología" width="45%" />
-  <img src="/public/screenshots/story-dice.png" alt="Dado de Historias" width="45%" />
-</div>
+5. **Consigue logros**: Obtén logros por completar ciertos requisitos
+6. **Consigue insignias y completa tareas**: Realiza tareas especiales para conseguir insignias que puedes descargar como certificados PDF y compartirlos
 
 ## 🗺️ Roadmaps
 
@@ -92,13 +86,10 @@ Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para má
 ---
 
 <div align="center">
-  <p>Desarrollado con ❤️ por el equipo de Diceryn</p>
+  <p>Desarrollado con ❤️ por Mystden </p>
   <p>
-    <a href="https://twitter.com/diceryn">Twitter</a> •
-    <a href="https://github.com/diceryn">GitHub</a> •
-    <a href="https://diceryn.com">Website</a>
+    <a href="https://twitter.com/mystden">Twitter</a> •
+    <a href="https://github.com/realmystden">GitHub</a> •
+    <a href="https://mystden.neocities.org">Website</a>
   </p>
 </div>
-\`\`\`
-
-Ahora, actualicemos el componente roadmap.tsx para añadir recursos de aprendizaje:
